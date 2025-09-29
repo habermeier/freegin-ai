@@ -1,0 +1,106 @@
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package]
+name = "freegin-ai"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# Web Server
+tokio = { version = "1", features = ["full"] }
+axum = "0.7"
+
+# Database (SQLite)
+sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite", "macros"] }
+
+# Configuration Management
+serde = { version = "1.0", features = ["derive"] }
+dotenvy = "0.15"
+config = "0.14"
+
+# HTTP Client for AI Providers
+reqwest = { version = "0.12", features = ["json"] }
+dirs = "5"
+chacha20poly1305 = { version = "0.10", features = ["std"] }
+rand = "0.8"
+rpassword = "7"
+chrono = { version = "0.4", features = ["serde", "clock"] }
+
+# Logging and Tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error Handling
+thiserror = "1.0"
+serde_json = "1.0"
+
+# Async traits
+async-trait = "0.1"
+
+[dev-dependencies]
+# For integration testing
+anyhow = "1.0"
+tower = "0.5"
+
+# --- Build & Linting Profiles ---
+# The following sections enforce extremely strict code quality standards.
+
+[profile.dev]
+opt-level = 0
+debug = true
+strip = "none"
+lto = false
+codegen-units = 256
+panic = "unwind"
+
+[profile.release]
+opt-level = "z"  # Optimize for size
+strip = true      # Strip symbols from the binary
+lto = true        # Enable Link Time Optimization
+codegen-units = 1 # Maximize size reduction
+panic = "abort"   # Abort on panic for smaller binary
+
+# Enforce a massive list of lints to catch potential issues at compile time.
+# This is intentionally very strict.
+[lints.rust]
+absolute_paths_not_starting_with_crate = "warn"
+elided_lifetimes_in_paths = "warn"
+explicit_outlives_requirements = "warn"
+keyword_idents = "warn"
+let_underscore_drop = "warn"
+macro_use_extern_crate = "warn"
+meta_variable_misuse = "warn"
+missing_abi = "warn"
+missing_copy_implementations = "warn"
+missing_debug_implementations = "warn"
+missing_docs = "warn"
+non_ascii_idents = "warn"
+noop_method_call = "warn"
+single_use_lifetimes = "warn"
+trivial_casts = "warn"
+trivial_numeric_casts = "warn"
+unreachable_pub = "warn"
+unsafe_code = "forbid" # Disallow unsafe code entirely
+unsafe_op_in_unsafe_fn = "warn"
+unstable_features = "warn"
+unused_crate_dependencies = "allow"
+unused_extern_crates = "warn"
+unused_import_braces = "warn"
+unused_lifetimes = "warn"
+unused_macro_rules = "warn"
+unused_qualifications = "warn"
+unused_results = "warn"
+variant_size_differences = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"
+cargo = "warn"
+
+# Disable some pedantic lints that are too noisy for this project
+disallowed-methods = "allow"
+wildcard-imports = "allow"
+module-name-repetitions = "allow"

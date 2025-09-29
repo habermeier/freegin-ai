@@ -1,0 +1,24 @@
+# Configuration for the AI Abstraction Layer
+# Copy this file to ../.secrets/app.toml and fill in your secrets.
+# DO NOT COMMIT THE .secrets/app.toml FILE.
+
+[server]
+host = "127.0.0.1"
+port = 8080
+
+[database]
+# Override via DATABASE_URL in environment variables for production deployments.
+# Default points to the user's XDG data directory (e.g., ~/.local/share/freegin-ai/app.db)
+url = ""
+
+[providers.openai]
+api_key = "YOUR_OPENAI_API_KEY_HERE"
+api_base_url = "https://api.openai.com/v1"
+
+[providers.google]
+api_key = "YOUR_GOOGLE_API_KEY_HERE"
+api_base_url = "https://generativelanguage.googleapis.com/v1beta"
+
+[providers.hugging_face]
+api_key = "YOUR_HUGGING_FACE_TOKEN"
+api_base_url = "https://api-inference.huggingface.co"
