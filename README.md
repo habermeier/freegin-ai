@@ -72,6 +72,26 @@ The server binds to the host and port defined in your configuration when launche
 
 Once installed you can consult the manual page via `man freegin-ai` or run `freegin-ai --help` for a quick summary (the bootstrap script prints this output automatically).
 
+### Command-Line Generation
+
+`freegin-ai generate` provides a non-interactive interface for producing completions:
+
+```bash
+echo "Summarise the design." | freegin-ai generate --complexity medium --quality balanced
+```
+
+Key flags:
+
+- `--prompt` / `--prompt-file PATH` – supply the main prompt (defaults to stdin).
+- `--output-file PATH` – write the response to a file instead of stdout.
+- `--context-file PATH` (repeatable) – include additional context snippets.
+- `--metadata key=value` (repeatable) – attach request metadata for auditing.
+- Routing hints: `--complexity low|medium|high`, `--quality standard|balanced|premium`,
+  `--speed fast|normal`, `--guardrail strict|lenient`.
+- `--provider NAME` and `--model NAME` – optional overrides for debugging. When omitted, the router selects the best provider based on hints, past performance, and available tokens.
+- `--format text|markdown|json` – shape the response; JSON wraps the content with metadata.
+- `--emit-metadata` – print the chosen provider info alongside the response when using text/markdown formats.
+
 ## Project Goals
 
 - Provide a sustainable pipeline for low-cost, high-quality code generation using multiple AI providers.

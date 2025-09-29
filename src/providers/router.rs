@@ -13,7 +13,7 @@ use crate::{
     config::AppConfig,
     credentials::CredentialStore,
     error::AppError,
-    models::{AIRequest, AIResponse},
+    models::{AIRequest, AIResponse, RequestComplexity, RequestQuality, RequestSpeed},
     usage::UsageLogger,
 };
 
@@ -172,6 +172,12 @@ impl ProviderRouter {
         let mut seen = HashSet::new();
         let mut ordered = Vec::new();
 
+        if let Some(provider) = self.provider_from_hints(request) {
+            if seen.insert(provider) {
+                ordered.push(provider);
+            }
+        }
+
         if let Some(provider) = self.provider_from_tags(request) {
             if seen.insert(provider) {
                 ordered.push(provider);
@@ -184,6 +190,12 @@ impl ProviderRouter {
             }
         }
 
+        for provider in self.hint_preferred_providers(request) {
+            if seen.insert(provider) {
+                ordered.push(provider);
+            }
+        }
+
         for provider in &self.fallback_order {
             if seen.insert(*provider) {
                 ordered.push(*provider);
@@ -191,6 +203,15 @@ impl ProviderRouter {
         }
 
         ordered
+    }
+
+    fn provider_from_hints(&self, request: &AIRequest) -> Option<Provider> {
+        request
+            .hints
+            .provider
+            .as_ref()
+            .and_then(|alias| Provider::from_alias(alias))
+            .filter(|provider| self.providers.contains_key(provider))
     }
 
     fn provider_from_tags(&self, request: &AIRequest) -> Option<Provider> {
@@ -228,5 +249,25 @@ impl ProviderRouter {
             return Some(Provider::Cohere);
         }
         None
+    }
+
+    fn hint_preferred_providers(&self, request: &AIRequest) -> Vec<Provider> {
+        let mut picks = Vec::new();
+
+        if matches!(request.hints.quality, Some(RequestQuality::Premium))
+            || matches!(request.hints.complexity, Some(RequestComplexity::High))
+        {
+            if self.providers.contains_key(&Provider::HuggingFace) {
+                picks.push(Provider::HuggingFace);
+            }
+        }
+
+        if matches!(request.hints.speed, Some(RequestSpeed::Fast))
+            && self.providers.contains_key(&Provider::Google)
+        {
+            picks.push(Provider::Google);
+        }
+
+        picks
     }
 }

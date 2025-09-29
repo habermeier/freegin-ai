@@ -12,19 +12,21 @@ use tower::util::ServiceExt;
 
 use freegin_ai::{
     error::AppError,
-    models::{AIRequest, AIResponse},
+    models::{AIRequest, AIResponse, RequestHints},
     providers::{AIProvider, Provider, ProviderRouter},
     routes::{api_router, AppState},
 };
 
-struct MockProvider;
+struct EchoProvider {
+    provider: Provider,
+}
 
 #[async_trait]
-impl AIProvider for MockProvider {
+impl AIProvider for EchoProvider {
     async fn generate(&self, request: &AIRequest) -> Result<AIResponse, AppError> {
         Ok(AIResponse {
             content: format!("echo: {}", request.prompt),
-            provider: Provider::HuggingFace,
+            provider: self.provider,
         })
     }
 }
@@ -32,7 +34,12 @@ impl AIProvider for MockProvider {
 #[tokio::test]
 async fn generate_returns_mock_response() -> anyhow::Result<()> {
     let mut providers: HashMap<Provider, Arc<dyn AIProvider + Send + Sync>> = HashMap::new();
-    drop(providers.insert(Provider::HuggingFace, Arc::new(MockProvider)));
+    drop(providers.insert(
+        Provider::HuggingFace,
+        Arc::new(EchoProvider {
+            provider: Provider::HuggingFace,
+        }),
+    ));
     let router = ProviderRouter::from_map(providers, vec![Provider::HuggingFace])?;
     let state = AppState::new(Arc::new(router));
     let app = api_router(state);
@@ -54,6 +61,42 @@ async fn generate_returns_mock_response() -> anyhow::Result<()> {
 
     assert_eq!(payload.content, "echo: Hello");
     assert_eq!(payload.provider, Provider::HuggingFace);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn router_prefers_provider_hint() -> anyhow::Result<()> {
+    let mut providers: HashMap<Provider, Arc<dyn AIProvider + Send + Sync>> = HashMap::new();
+    drop(providers.insert(
+        Provider::Google,
+        Arc::new(EchoProvider {
+            provider: Provider::Google,
+        }),
+    ));
+    drop(providers.insert(
+        Provider::HuggingFace,
+        Arc::new(EchoProvider {
+            provider: Provider::HuggingFace,
+        }),
+    ));
+    let router =
+        ProviderRouter::from_map(providers, vec![Provider::Google, Provider::HuggingFace])?;
+
+    let request = AIRequest {
+        model: String::new(),
+        prompt: "Hello".into(),
+        tags: Vec::new(),
+        context: Vec::new(),
+        metadata: HashMap::new(),
+        hints: RequestHints {
+            provider: Some("huggingface".into()),
+            ..RequestHints::default()
+        },
+    };
+
+    let response = router.generate(&request).await?;
+    assert_eq!(response.provider, Provider::HuggingFace);
 
     Ok(())
 }

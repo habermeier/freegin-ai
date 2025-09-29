@@ -5,6 +5,9 @@ freegin-ai \- generative AI service abstraction layer gateway
 .B freegin-ai
 .RI [ OPTIONS ]
 .br
+.B freegin-ai generate
+.RI [ GENERATE_OPTIONS ]
+.br
 .B freegin-ai add-service
 .RI provider
 .br
@@ -44,6 +47,44 @@ Display usage information and exit without starting the server.
 .B -V, --version
 Print the binary version and exit.
 .PP
+.B generate
+Runs a single non-interactive inference request. Key options include:
+.RS
+.TP
+.B --prompt TEXT
+Inline prompt text (defaults to stdin if omitted).
+.TP
+.B --prompt-file FILE
+Read the prompt from the specified file.
+.TP
+.B --output-file FILE
+Write the response to a file instead of stdout.
+.TP
+.B --context-file FILE
+Attach additional context snippets (repeatable).
+.TP
+.B --metadata KEY=VALUE
+Associate metadata with the request (repeatable).
+.TP
+.B --complexity {low|medium|high}
+.br
+.B --quality {standard|balanced|premium}
+.br
+.B --speed {fast|normal}
+.br
+.B --guardrail {strict|lenient}
+Soft routing hints. The router uses these to prioritise available providers.
+.TP
+.B --format {text|markdown|json}
+Shape the response format; JSON wraps the content with metadata.
+.TP
+.B --provider NAME
+Explicitly force a provider (e.g., "huggingface").
+.TP
+.B --model NAME
+Optional model override passed to the provider.
+.RE
+.PP
 .B add-service
 Prompts for credentials for the specified provider (currently
 .B huggingface
@@ -73,7 +114,7 @@ Overrides the configured port.
 .TP
 .B DATABASE_URL
 Location of the SQLite database; defaults to
-.BR sqlite:data/app.db .
+.BR "sqlite://~/.local/share/freegin-ai/app.db" .
 .SH SEE ALSO
 .BR scripts/bootstrap.sh (1),
 .BR cargo (1),
