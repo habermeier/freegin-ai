@@ -1,24 +1,68 @@
-# Configuration for the AI Abstraction Layer
-# Copy this file to ../.secrets/app.toml and fill in your secrets.
-# DO NOT COMMIT THE .secrets/app.toml FILE.
+# Configuration for freegin-ai
+#
+# RECOMMENDED: Use encrypted credential storage instead:
+#   freegin-ai --init    (interactive wizard)
+#   freegin-ai add-service <provider>
+#
+# This file serves as a template for ~/.config/freegin-ai/config.toml
+# API keys in this file are NOT encrypted. Use the commands above for secure storage.
 
 [server]
 host = "127.0.0.1"
 port = 8080
 
 [database]
-# Override via DATABASE_URL in environment variables for production deployments.
-# Default points to the user's XDG data directory (e.g., ~/.local/share/freegin-ai/app.db)
+# Override via DATABASE_URL environment variable if needed
+# Default: sqlite://~/.local/share/freegin-ai/app.db
 url = ""
 
-[providers.openai]
-api_key = "YOUR_OPENAI_API_KEY_HERE"
-api_base_url = "https://api.openai.com/v1"
+# Provider API keys (leave empty to use encrypted storage)
+# Get API keys from the URLs listed below
+
+[providers.groq]
+# Sign up: https://console.groq.com/keys
+# Free tier: 14,400 requests/day
+api_key = ""
+api_base_url = "https://api.groq.com/openai/v1"
+
+[providers.deepseek]
+# Sign up: https://platform.deepseek.com/api_keys
+# Free tier: Unlimited (may require $5 deposit for API access)
+api_key = ""
+api_base_url = "https://api.deepseek.com"
+
+[providers.together]
+# Sign up: https://api.together.xyz/settings/api-keys
+# Free tier: Free models available
+api_key = ""
+api_base_url = "https://api.together.xyz/v1"
 
 [providers.google]
-api_key = "YOUR_GOOGLE_API_KEY_HERE"
+# Sign up: https://makersuite.google.com/app/apikey
+# Free tier: 60 requests/min, 1M tokens/min
+api_key = ""
 api_base_url = "https://generativelanguage.googleapis.com/v1beta"
 
 [providers.hugging_face]
-api_key = "YOUR_HUGGING_FACE_TOKEN"
+# Sign up: https://huggingface.co/settings/tokens
+# Free tier: Rate-limited serverless API
+api_key = ""
 api_base_url = "https://api-inference.huggingface.co"
+
+[providers.openai]
+# Sign up: https://platform.openai.com/api-keys
+# Pricing: Pay-as-you-go (no free tier, requires payment method)
+api_key = ""
+api_base_url = "https://api.openai.com/v1"
+
+[providers.anthropic]
+# Sign up: https://console.anthropic.com/
+# Pricing: Pay-as-you-go (may have initial free credits)
+api_key = ""
+api_base_url = "https://api.anthropic.com"
+
+[providers.cohere]
+# Sign up: https://dashboard.cohere.com/api-keys
+# Free tier: Available for experimentation
+api_key = ""
+api_base_url = "https://api.cohere.ai"
