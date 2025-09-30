@@ -16,9 +16,9 @@
 - Provides clean output modes for piping and code generation
 
 **Free Tier Focus:** The default configuration prioritizes providers with generous free tiers:
-- **Groq**: 14,400 requests/day, ultra-fast inference (truly free)
+- **Groq**: Ultra-fast inference (14.4K req/day for 8B models, 1K req/day for 70B models)
 - **DeepSeek**: Pay-as-you-go (very low cost: $0.028-$2.19/M tokens)
-- **Together AI**: Free tier models after $5 deposit (Llama 3.3 70B)
+- **Together AI**: Requires $5 credit purchase for API access (free tier ended Aug 2025)
 
 ## Quick Start
 
@@ -153,10 +153,10 @@ freegin-ai remove-service groq
 
 | Provider | Free Tier | Speed | Best For |
 |----------|-----------|-------|----------|
-| **Groq** | 14.4K req/day | ⚡ Ultra-fast | Quick queries, high volume |
+| **Groq** | 1K-14.4K req/day (model-dependent) | ⚡ Ultra-fast | Quick queries, high volume |
 | **DeepSeek** | Pay-per-use ($0.028-$2.19/M) | Fast | Low-cost reasoning |
-| **Together AI** | Requires $5 deposit | Fast | Llama 3.3 70B free tier |
-| **Google Gemini** | 60 req/min | Fast | Multimodal tasks |
+| **Together AI** | $5 credit required (no free tier) | Fast | Paid access after deposit |
+| **Google Gemini** | 100 req/day (2.5 Pro) | Fast | Multimodal tasks |
 | **Hugging Face** | Rate-limited | Varies | Specialized models |
 | **OpenAI** | Pay-as-you-go | Fast | Production workloads |
 | **Anthropic** | Limited credits | Fast | Complex reasoning |

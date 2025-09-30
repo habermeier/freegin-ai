@@ -128,9 +128,9 @@ The system automatically seeds these models for each provider:
 - **Code**: `meta-llama/Llama-3.3-70B-Instruct-Turbo-Free` (priority 25)
 
 ### Google Gemini
-- **Chat**: `gemini-2.0-flash-exp` (priority 40)
-- **Code**: `gemini-2.0-flash-exp` (priority 35)
-- **Summarization**: `gemini-2.0-flash-exp` (priority 40)
+- **Chat**: `gemini-2.0-flash` (priority 40)
+- **Code**: `gemini-2.0-flash` (priority 35)
+- **Summarization**: `gemini-2.0-flash` (priority 40)
 
 ## Priority System
 
