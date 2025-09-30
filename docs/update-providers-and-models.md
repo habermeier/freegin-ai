@@ -7,13 +7,31 @@ This document provides a comprehensive workflow for researching, evaluating, and
 ## 🚀 Quick Start (For AI Assistants)
 
 **Task**: Research current AI provider status and report findings
+**Expected Time**: 20-30 minutes
+**Effort Level**: Thorough (prioritize completeness over speed)
 
 ### What to Do
 
-1. **Execute Web Research** (see "Research Phase" below for detailed search queries)
-   - Find current free tier limits for: Groq, DeepSeek, Together AI, Google Gemini, Hugging Face
-   - Verify model names haven't been deprecated
-   - Search for new providers with free tiers (include even 50+ req/day)
+1. **Execute Web Research** (REQUIRED: Follow search queries below)
+
+   **For Existing Providers** (minimum 15 searches):
+   - "Groq API rate limits 2025" + "Groq llama 3.3 70b free tier"
+   - "DeepSeek API pricing 2025" + "DeepSeek free tier 2025"
+   - "Together AI free tier 2025" + "Together AI pricing changes 2025"
+   - "Google Gemini API free tier 2025" + "Gemini 2.5 rate limits"
+   - "Hugging Face Inference API free 2025"
+   - For each: Check official docs + community discussions (Reddit, GitHub)
+
+   **For New Providers** (minimum 10 searches):
+   - "free AI API 2025" OR "free LLM API 2025"
+   - "new AI providers 2025 free tier"
+   - "best free AI APIs reddit 2025"
+   - "AI provider comparison free tier 2025"
+   - "Cloudflare Workers AI free" + "Cerebras AI free" + "Mistral API free"
+   - "GitHub Models free tier" + "OpenRouter free models"
+   - Check: Cloudflare, Cerebras, Mistral, Clarifai, Replicate, Modal
+
+   **Target**: Find at least 5 new provider options
 
 2. **Verify Our Catalog** (check `src/catalog.rs` line-by-line)
    - Test if model names still exist via web search
@@ -52,13 +70,48 @@ This document provides a comprehensive workflow for researching, evaluating, and
 - **Check dates**: Only trust info from last 3-6 months
 - **Test deprecations**: Search `"[model] deprecated" site:github.com`
 
+### Success Checklist (Complete BEFORE Reporting)
+
+Your research is ready to submit when ALL boxes are checked:
+
+**Research Completeness**:
+- [ ] Completed minimum 25 total web searches (15 existing + 10 new providers)
+- [ ] Verified ALL 5 existing providers (Groq, DeepSeek, Together AI, Google Gemini, Hugging Face)
+- [ ] Found 5+ new provider options with documented free tiers
+- [ ] Checked EVERY model name in src/catalog.rs (lines 265-403)
+- [ ] Spent at least 20 minutes on research
+
+**Quality Standards**:
+- [ ] Every claim has a source URL (official docs or community discussion)
+- [ ] Checked information recency (last 3-6 months only)
+- [ ] Distinguished "truly free" from "pay-per-use" providers
+- [ ] Searched for deprecation notices for all existing models
+- [ ] Verified rate limits with official documentation
+
+**Documentation Check**:
+- [ ] Reviewed README.md for outdated free tier claims
+- [ ] Reviewed docs/providers-setup.md for incorrect rate limits
+- [ ] Checked if Together AI still claims to be "free"
+- [ ] Verified Groq quota numbers specify which model (8B vs 70B)
+
+**Findings Report**:
+- [ ] Created findings file in tmp/ directory
+- [ ] Documented all provider status changes
+- [ ] Listed specific documentation bugs with line numbers
+- [ ] Included new provider options with source URLs
+- [ ] Used the template format provided above
+
+**If ANY checkbox is unchecked, continue researching before submitting.**
+
 ### Expected Output
 
 A findings file listing:
 - ✅ What's working and unchanged
 - ⚠️ What changed (rate limits, model names, pricing)
 - 🐛 Bugs in our docs (wrong quotas, deprecated models)
-- 🆕 New providers to consider
+- 🆕 New providers to consider (aim for 5+)
+
+**Quality Target**: Your findings should be thorough enough that another AI running the same searches would find the same critical issues.
 
 **Then**: A human will review your findings and apply fixes to the codebase.
 
