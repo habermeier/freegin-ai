@@ -4,6 +4,66 @@ This document provides a comprehensive workflow for researching, evaluating, and
 
 ---
 
+## 🚀 Quick Start (For AI Assistants)
+
+**Task**: Research current AI provider status and report findings
+
+### What to Do
+
+1. **Execute Web Research** (see "Research Phase" below for detailed search queries)
+   - Find current free tier limits for: Groq, DeepSeek, Together AI, Google Gemini, Hugging Face
+   - Verify model names haven't been deprecated
+   - Search for new providers with free tiers (include even 50+ req/day)
+
+2. **Verify Our Catalog** (check `src/catalog.rs` line-by-line)
+   - Test if model names still exist via web search
+   - Look for deprecation announcements (search: `"[model-name] deprecated"`)
+   - Check provider rate limit changes
+
+3. **Check Our Documentation** (README.md, docs/providers-setup.md)
+   - Verify free tier claims match current reality
+   - Look for outdated quota numbers (e.g., "14,400 req/day")
+   - Check if providers still have free tiers
+
+4. **Report Findings** in `tmp/[your-name]-research-findings.md`:
+   ```markdown
+   ## Provider Status
+   ### Groq
+   - Status: [Active/Changed/Deprecated]
+   - Free Tier: [Current limits with source URL]
+   - Model Names: [Verified current? Any deprecations?]
+   - Changes: [What changed since our docs?]
+
+   ### [Repeat for all providers]
+
+   ## Documentation Bugs Found
+   1. README.md:X - Claims Y but actually Z
+   2. src/catalog.rs:X - Uses deprecated model name
+
+   ## New Providers Found
+   - [Name]: [Free tier details, URL]
+   ```
+
+### Critical Rules
+
+- **Include ALL free options** (even 50 req/day counts!)
+- **Distinguish types**: Truly free ≠ Pay-per-use (even if cheap)
+- **Verify with sources**: Link to official docs for all claims
+- **Check dates**: Only trust info from last 3-6 months
+- **Test deprecations**: Search `"[model] deprecated" site:github.com`
+
+### Expected Output
+
+A findings file listing:
+- ✅ What's working and unchanged
+- ⚠️ What changed (rate limits, model names, pricing)
+- 🐛 Bugs in our docs (wrong quotas, deprecated models)
+- 🆕 New providers to consider
+
+**Then**: A human will review your findings and apply fixes to the codebase.
+
+---
+
 ## 🎯 Objective
 
 Find the best **free or low-cost** AI providers with generous limits and update the project to use current model names, accurate pricing information, and optimal routing priorities.
@@ -1180,63 +1240,6 @@ git push origin update-providers-$(date +%Y%m)
 
 ---
 
-## 🤖 AI Assistant Prompt
-
-Use this prompt when asking an AI assistant to help with updates:
-
-```markdown
-I need help updating AI providers and models for the freegin-ai project. Please:
-
-1. **Research Phase**: Search for current information about these providers:
-   - Groq (https://console.groq.com)
-   - DeepSeek (https://platform.deepseek.com)
-   - Together AI (https://api.together.xyz)
-   - Google Gemini (https://ai.google.dev)
-   - Hugging Face (https://huggingface.co)
-
-   For each provider, find:
-   - Current free tier limits (requests/day, tokens/minute)
-   - Current model names (CRITICAL - verify these haven't changed)
-   - Any pricing changes
-   - Any new "free" models added
-
-   Also search for:
-   - New AI providers with generous free tiers
-   - Community discussions about best free AI APIs
-   - Recent provider shutdowns or changes
-
-2. **Verification**: For each model name currently in the project, verify it still works:
-   - Check official documentation
-   - Look for GitHub issues mentioning "model not found"
-   - Search for recent deprecation announcements
-
-3. **Comparison**: Find providers we're NOT using that might be better:
-   - Look for providers with better free tiers
-   - Find providers with unique capabilities
-   - Check for providers with higher rate limits
-
-4. **Compilation**: Create a report with:
-   - Current status of each provider (working? changed? deprecated?)
-   - Model names that need updating
-   - New providers to add
-   - Providers to remove
-   - Priority order recommendations
-
-5. **Implementation Plan**: Based on your findings, list the specific code changes needed:
-   - Which model names to update in src/catalog.rs
-   - Which providers to add (with API format details)
-   - Which providers to remove
-   - Documentation updates needed
-
-Please search the web for current information (prioritize sources from the last 3 months) and compile your findings in the format described in docs/update-providers-and-models.md.
-
-Focus on: FREE TIER providers with generous limits. No paid-only providers.
-
-Current project structure is at: /home/quagoo/freegin-ai
-```
-
----
-
 ## 📊 Research Checklist
 
 Before implementing changes, verify you have:
@@ -1294,18 +1297,26 @@ Recommended schedule:
 1. **Model Name Changes**: Providers frequently rename models. Always verify current names.
 
 2. **Free Tier Changes**: "Free" can become "pay-per-use" overnight. Check pricing pages.
+   - **Recent Example (Sept 2025)**: Together AI phased out free tier in Aug 2025, now requires $5 credit purchase for Build Tier 1 access.
 
 3. **Rate Limit Changes**: Limits can be reduced without notice. Monitor actual usage.
+   - **Recent Example (Sept 2025)**: Groq changed rate limits. The 70B model (llama-3.3-70b-versatile) now has 1K RPD (not 14.4K). Only the 8B model (llama-3.1-8b-instant) retains 14.4K RPD.
 
-4. **API Endpoint Changes**: Providers sometimes change base URLs. Keep URLs current.
+4. **Model Variant Confusion**: Same model family, different quotas. Always specify which variant.
+   - **Example**: "Groq offers 14.4K req/day" is misleading if referring to the 70B model. Clarify which model size.
 
-5. **Deposit Requirements**: Some "free" tiers require $5 deposit. Document these clearly.
+5. **Experimental Model Deprecation**: Models with `-exp` suffix often get deprecated without clear migration paths.
+   - **Recent Example (Sept 2025)**: Google's `gemini-2.0-flash-exp` no longer documented, likely deprecated in favor of `gemini-2.0-flash` or `gemini-2.5-flash`.
 
-6. **Deprecated Models**: Old model names may still "work" but route to different models. Verify behavior.
+6. **API Endpoint Changes**: Providers sometimes change base URLs. Keep URLs current.
 
-7. **Regional Restrictions**: Some providers have geographic limits on free tiers.
+7. **Deposit Requirements**: Some "free" tiers require $5 deposit. Document these clearly.
 
-8. **Authentication Changes**: API key formats or header names can change.
+8. **Deprecated Models**: Old model names may still "work" but route to different models. Verify behavior.
+
+9. **Regional Restrictions**: Some providers have geographic limits on free tiers.
+
+10. **Authentication Changes**: API key formats or header names can change.
 
 ---
 
@@ -1334,5 +1345,5 @@ An update is successful when:
 
 ---
 
-**Last Updated**: [Update this when you run the process]
-**Next Review**: [Set date for next quarterly review]
+**Last Updated**: 2025-09-30 (Codex validation run - found Groq rate limit changes, Together AI free tier ended, Gemini model deprecations)
+**Next Review**: 2025-12-30 (Quarterly review recommended)
