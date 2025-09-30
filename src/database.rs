@@ -71,9 +71,16 @@ pub async fn ensure_schema(pool: &DbPool) -> Result<(), DbError> {
         CREATE TABLE IF NOT EXISTS provider_usage (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             provider TEXT NOT NULL,
+            model TEXT,
             success INTEGER NOT NULL,
             latency_ms INTEGER NOT NULL,
             error_message TEXT,
+            prompt_tokens INTEGER,
+            completion_tokens INTEGER,
+            total_tokens INTEGER,
+            input_cost_micros INTEGER,
+            output_cost_micros INTEGER,
+            total_cost_micros INTEGER,
             created_at TEXT NOT NULL
         )
         "#,
@@ -83,6 +90,152 @@ pub async fn ensure_schema(pool: &DbPool) -> Result<(), DbError> {
     .map_err(DbError::QueryFailed)?;
 
     let _ = result.rows_affected();
+
+    let result = sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS provider_models (
+            provider TEXT NOT NULL,
+            workload TEXT NOT NULL,
+            model TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'active',
+            priority INTEGER NOT NULL DEFAULT 100,
+            rationale TEXT,
+            metadata TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            UNIQUE(provider, workload, model)
+        )
+        "#,
+    )
+    .execute(pool)
+    .await
+    .map_err(DbError::QueryFailed)?;
+
+    let _ = result.rows_affected();
+
+    let result = sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS provider_model_suggestions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            provider TEXT NOT NULL,
+            workload TEXT NOT NULL,
+            model TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            rationale TEXT,
+            metadata TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            UNIQUE(provider, workload, model)
+        )
+        "#,
+    )
+    .execute(pool)
+    .await
+    .map_err(DbError::QueryFailed)?;
+
+    let _ = result.rows_affected();
+
+    let result = sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS provider_health (
+            provider TEXT PRIMARY KEY,
+            status TEXT NOT NULL DEFAULT 'available',
+            last_error TEXT,
+            last_error_at TEXT,
+            retry_after TEXT,
+            consecutive_failures INTEGER NOT NULL DEFAULT 0,
+            last_success_at TEXT,
+            updated_at TEXT NOT NULL
+        )
+        "#,
+    )
+    .execute(pool)
+    .await
+    .map_err(DbError::QueryFailed)?;
+
+    let _ = result.rows_affected();
+
+    // Migrate existing databases - add columns if they don't exist
+    migrate_provider_usage_columns(pool).await?;
+
+    // Create indexes for performance
+    let result = sqlx::query(
+        r#"
+        CREATE INDEX IF NOT EXISTS idx_provider_models_active
+        ON provider_models(provider, workload, status, priority)
+        "#,
+    )
+    .execute(pool)
+    .await
+    .map_err(DbError::QueryFailed)?;
+
+    let _ = result.rows_affected();
+
+    let result = sqlx::query(
+        r#"
+        CREATE INDEX IF NOT EXISTS idx_provider_model_suggestions
+        ON provider_model_suggestions(provider, workload, status)
+        "#,
+    )
+    .execute(pool)
+    .await
+    .map_err(DbError::QueryFailed)?;
+
+    let _ = result.rows_affected();
+
+    let result = sqlx::query(
+        r#"
+        CREATE INDEX IF NOT EXISTS idx_provider_usage_provider_model_time
+        ON provider_usage(provider, model, created_at)
+        "#,
+    )
+    .execute(pool)
+    .await
+    .map_err(DbError::QueryFailed)?;
+
+    let _ = result.rows_affected();
+
+    Ok(())
+}
+
+async fn migrate_provider_usage_columns(pool: &DbPool) -> Result<(), DbError> {
+    // Check if 'model' column exists in provider_usage
+    let check_result = sqlx::query("SELECT model FROM provider_usage LIMIT 1")
+        .fetch_optional(pool)
+        .await;
+
+    if check_result.is_err() {
+        // Column doesn't exist, add it
+        let result = sqlx::query("ALTER TABLE provider_usage ADD COLUMN model TEXT")
+            .execute(pool)
+            .await
+            .map_err(DbError::QueryFailed)?;
+        let _ = result.rows_affected();
+    }
+
+    // Check and add cost tracking columns
+    let columns = vec![
+        "prompt_tokens",
+        "completion_tokens",
+        "total_tokens",
+        "input_cost_micros",
+        "output_cost_micros",
+        "total_cost_micros",
+    ];
+
+    for column in columns {
+        let check_query = format!("SELECT {} FROM provider_usage LIMIT 1", column);
+        let check_result = sqlx::query(&check_query).fetch_optional(pool).await;
+
+        if check_result.is_err() {
+            let alter_query = format!("ALTER TABLE provider_usage ADD COLUMN {} INTEGER", column);
+            let result = sqlx::query(&alter_query)
+                .execute(pool)
+                .await
+                .map_err(DbError::QueryFailed)?;
+            let _ = result.rows_affected();
+        }
+    }
 
     Ok(())
 }

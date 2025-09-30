@@ -83,6 +83,13 @@ Explicitly force a provider (e.g., "huggingface").
 .TP
 .B --model NAME
 Optional model override passed to the provider.
+.TP
+.B -v, --verbose
+Display provider metadata before the response. Metadata is written to stderr,
+allowing the response content to be cleanly piped to other tools.
+.TP
+.B --emit-metadata
+Output provider metadata as JSON after the response.
 .RE
 .PP
 .B add-service

@@ -64,7 +64,9 @@ panic = "abort"   # Abort on panic for smaller binary
 
 # Enforce a massive list of lints to catch potential issues at compile time.
 # This is intentionally very strict.
+# All warnings are treated as errors to ensure a clean build.
 [lints.rust]
+warnings = "deny"
 absolute_paths_not_starting_with_crate = "warn"
 elided_lifetimes_in_paths = "warn"
 explicit_outlives_requirements = "warn"

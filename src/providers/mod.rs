@@ -23,6 +23,12 @@ pub enum Provider {
     Anthropic,
     /// Cohere models.
     Cohere,
+    /// Groq models (ultra-fast inference).
+    Groq,
+    /// DeepSeek models (unlimited free tier).
+    DeepSeek,
+    /// Together AI models.
+    Together,
 }
 
 /// A common trait for all AI provider clients.
@@ -41,6 +47,9 @@ impl Provider {
             Provider::HuggingFace => "huggingface",
             Provider::Anthropic => "anthropic",
             Provider::Cohere => "cohere",
+            Provider::Groq => "groq",
+            Provider::DeepSeek => "deepseek",
+            Provider::Together => "together",
         }
     }
 
@@ -52,6 +61,9 @@ impl Provider {
             "huggingface" | "hugging_face" | "hf" => Some(Provider::HuggingFace),
             "anthropic" | "claude" => Some(Provider::Anthropic),
             "cohere" => Some(Provider::Cohere),
+            "groq" => Some(Provider::Groq),
+            "deepseek" => Some(Provider::DeepSeek),
+            "together" | "togetherai" | "together_ai" => Some(Provider::Together),
             _ => None,
         }
     }
@@ -63,9 +75,12 @@ impl fmt::Display for Provider {
     }
 }
 
+pub mod deepseek;
 pub mod google;
+pub mod groq;
 pub mod hugging_face;
 pub mod openai;
 pub mod router;
+pub mod together;
 
 pub use router::ProviderRouter;

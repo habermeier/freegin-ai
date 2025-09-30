@@ -22,22 +22,29 @@ impl UsageLogger {
         Self { pool }
     }
 
+    /// Returns the underlying database pool.
+    pub fn pool(&self) -> Arc<DbPool> {
+        Arc::clone(&self.pool)
+    }
+
     /// Persists a usage record.
     pub async fn log(
         &self,
         provider: Provider,
+        model: Option<&str>,
         success: bool,
         latency_ms: i64,
         error_message: Option<String>,
     ) -> Result<(), AppError> {
         let now = Utc::now().to_rfc3339();
-        let success_flag = if success { 1 } else { 0 };
+        let success_flag = i32::from(success);
 
         let result = sqlx::query(
-            r#"INSERT INTO provider_usage (provider, success, latency_ms, error_message, created_at)
-               VALUES (?, ?, ?, ?, ?)"#,
+            r#"INSERT INTO provider_usage (provider, model, success, latency_ms, error_message, created_at)
+               VALUES (?, ?, ?, ?, ?, ?)"#,
         )
         .bind(provider.as_str())
+        .bind(model)
         .bind(success_flag)
         .bind(latency_ms)
         .bind(error_message)

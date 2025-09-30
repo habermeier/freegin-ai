@@ -10,20 +10,27 @@ use std::{
 use tracing::{debug, warn};
 
 use crate::{
+    catalog::{CatalogStore, ModelEntry},
     config::AppConfig,
     credentials::CredentialStore,
     error::AppError,
+    health::HealthTracker,
     models::{AIRequest, AIResponse, RequestComplexity, RequestQuality, RequestSpeed},
     usage::UsageLogger,
 };
 
-use super::{google::GoogleClient, hugging_face::HuggingFaceClient, AIProvider, Provider};
+use super::{
+    deepseek::DeepSeekClient, google::GoogleClient, groq::GroqClient,
+    hugging_face::HuggingFaceClient, together::TogetherClient, AIProvider, Provider,
+};
 
 /// Coordinates AI providers and encapsulates routing logic.
 pub struct ProviderRouter {
     providers: HashMap<Provider, Arc<dyn AIProvider + Send + Sync>>, // for fallback order we maintain vector
     fallback_order: Vec<Provider>,
     usage_logger: Option<UsageLogger>,
+    catalog: Option<CatalogStore>,
+    health_tracker: Option<HealthTracker>,
 }
 
 impl fmt::Debug for ProviderRouter {
@@ -37,6 +44,8 @@ impl fmt::Debug for ProviderRouter {
             .field("providers", &providers)
             .field("fallback_order", &self.fallback_order)
             .field("usage_logger", &self.usage_logger.is_some())
+            .field("catalog", &self.catalog.is_some())
+            .field("health_tracker", &self.health_tracker.is_some())
             .finish()
     }
 }
@@ -47,6 +56,7 @@ impl ProviderRouter {
         config: &AppConfig,
         store: &CredentialStore,
         usage_logger: Option<UsageLogger>,
+        catalog: Option<CatalogStore>,
     ) -> Result<Self, AppError> {
         let mut providers: HashMap<Provider, Arc<dyn AIProvider + Send + Sync>> = HashMap::new();
         let mut fallback_order: Vec<Provider> = Vec::new();
@@ -98,7 +108,88 @@ impl ProviderRouter {
             }
         }
 
-        Self::from_map_internal(providers, fallback_order, usage_logger)
+        // Groq - check encrypted storage first, then config
+        let groq_cfg = config.providers.groq.as_ref();
+        let groq_token_cfg = groq_cfg.and_then(|cfg| {
+            let trimmed = cfg.api_key.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        });
+        let groq_token = match groq_token_cfg {
+            Some(token) => Some(token),
+            None => store.get_token(Provider::Groq).await?,
+        };
+        if let Some(token) = groq_token {
+            let base_url = store
+                .resolve_base_url(Provider::Groq, groq_cfg.map(|cfg| cfg.api_base_url.as_str()))
+                .to_string();
+            let client = GroqClient::new(token, base_url)?;
+            drop(providers.insert(Provider::Groq, Arc::new(client)));
+            fallback_order.push(Provider::Groq);
+        } else {
+            debug!(provider = "groq", "Provider not configured (missing credentials)");
+        }
+
+        // DeepSeek - check encrypted storage first, then config
+        let deepseek_cfg = config.providers.deepseek.as_ref();
+        let deepseek_token_cfg = deepseek_cfg.and_then(|cfg| {
+            let trimmed = cfg.api_key.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        });
+        let deepseek_token = match deepseek_token_cfg {
+            Some(token) => Some(token),
+            None => store.get_token(Provider::DeepSeek).await?,
+        };
+        if let Some(token) = deepseek_token {
+            let base_url = store
+                .resolve_base_url(
+                    Provider::DeepSeek,
+                    deepseek_cfg.map(|cfg| cfg.api_base_url.as_str()),
+                )
+                .to_string();
+            let client = DeepSeekClient::new(token, base_url)?;
+            drop(providers.insert(Provider::DeepSeek, Arc::new(client)));
+            fallback_order.push(Provider::DeepSeek);
+        } else {
+            debug!(provider = "deepseek", "Provider not configured (missing credentials)");
+        }
+
+        // Together AI - check encrypted storage first, then config
+        let together_cfg = config.providers.together.as_ref();
+        let together_token_cfg = together_cfg.and_then(|cfg| {
+            let trimmed = cfg.api_key.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        });
+        let together_token = match together_token_cfg {
+            Some(token) => Some(token),
+            None => store.get_token(Provider::Together).await?,
+        };
+        if let Some(token) = together_token {
+            let base_url = store
+                .resolve_base_url(
+                    Provider::Together,
+                    together_cfg.map(|cfg| cfg.api_base_url.as_str()),
+                )
+                .to_string();
+            let client = TogetherClient::new(token, base_url)?;
+            drop(providers.insert(Provider::Together, Arc::new(client)));
+            fallback_order.push(Provider::Together);
+        } else {
+            debug!(provider = "together", "Provider not configured (missing credentials)");
+        }
+
+        Self::from_map_internal(providers, fallback_order, usage_logger, catalog)
     }
 
     /// Convenience constructor for scenarios that build providers manually
@@ -107,13 +198,14 @@ impl ProviderRouter {
         providers: HashMap<Provider, Arc<dyn AIProvider + Send + Sync>>,
         fallback_order: Vec<Provider>,
     ) -> Result<Self, AppError> {
-        Self::from_map_internal(providers, fallback_order, None)
+        Self::from_map_internal(providers, fallback_order, None, None)
     }
 
     fn from_map_internal(
         providers: HashMap<Provider, Arc<dyn AIProvider + Send + Sync>>,
         fallback_order: Vec<Provider>,
         usage_logger: Option<UsageLogger>,
+        catalog: Option<CatalogStore>,
     ) -> Result<Self, AppError> {
         if providers.is_empty() {
             return Err(AppError::ConfigError(
@@ -121,23 +213,65 @@ impl ProviderRouter {
             ));
         }
 
+        // Create health tracker from usage logger's pool if available
+        let health_tracker = usage_logger.as_ref().map(|logger| {
+            HealthTracker::new(logger.pool())
+        });
+
         Ok(Self {
             providers,
             fallback_order,
             usage_logger,
+            catalog,
+            health_tracker,
         })
     }
 
     /// Attempts to fulfil the request by delegating to an appropriate provider.
     pub async fn generate(&self, request: &AIRequest) -> Result<AIResponse, AppError> {
         for provider in self.select_candidates(request) {
+            // Check provider health before attempting to use it
+            if let Some(health_tracker) = &self.health_tracker {
+                match health_tracker.is_available(provider).await {
+                    Ok(false) => {
+                        debug!(provider = %provider, "Skipping unavailable provider");
+                        continue;
+                    }
+                    Err(err) => {
+                        warn!(provider = %provider, error = %err, "Failed to check provider health");
+                        // Continue anyway - don't let health check errors block routing
+                    }
+                    Ok(true) => {}
+                }
+            }
+
             if let Some(client) = self.providers.get(&provider) {
+                let mut routed_request = request.clone();
+                if routed_request.model.is_empty() {
+                    if let Some(model) = self.pick_model(provider, &routed_request).await? {
+                        routed_request.model = model;
+                    }
+                }
+
                 let start = Instant::now();
-                match client.generate(request).await {
+                match client.generate(&routed_request).await {
                     Ok(response) => {
+                        // Record successful call
+                        if let Some(health_tracker) = &self.health_tracker {
+                            if let Err(err) = health_tracker.record_success(provider).await {
+                                warn!(provider = %provider, error = %err, "Failed to record provider success");
+                            }
+                        }
+
                         if let Some(logger) = &self.usage_logger {
                             if let Err(err) = logger
-                                .log(provider, true, start.elapsed().as_millis() as i64, None)
+                                .log(
+                                    provider,
+                                    Some(routed_request.model.as_str()),
+                                    true,
+                                    start.elapsed().as_millis() as i64,
+                                    None,
+                                )
                                 .await
                             {
                                 warn!(provider = %provider, error = %err, "Failed to log provider usage");
@@ -146,13 +280,26 @@ impl ProviderRouter {
                         return Ok(response);
                     }
                     Err(err) => {
+                        let error_message = err.to_string();
+
+                        // Record failed call with error classification
+                        if let Some(health_tracker) = &self.health_tracker {
+                            if let Err(health_err) = health_tracker
+                                .record_failure(provider, &error_message)
+                                .await
+                            {
+                                warn!(provider = %provider, error = %health_err, "Failed to record provider failure");
+                            }
+                        }
+
                         if let Some(logger) = &self.usage_logger {
                             if let Err(log_err) = logger
                                 .log(
                                     provider,
+                                    Some(routed_request.model.as_str()),
                                     false,
                                     start.elapsed().as_millis() as i64,
-                                    Some(err.to_string()),
+                                    Some(error_message.clone()),
                                 )
                                 .await
                             {
@@ -269,5 +416,31 @@ impl ProviderRouter {
         }
 
         picks
+    }
+
+    async fn pick_model(
+        &self,
+        provider: Provider,
+        request: &AIRequest,
+    ) -> Result<Option<String>, AppError> {
+        if let Some(model) = request.hints.provider.as_ref() {
+            if !model.is_empty() {
+                return Ok(Some(model.clone()));
+            }
+        }
+
+        let workload = request.hints.workload;
+        if let Some(catalog) = &self.catalog {
+            let models = catalog
+                .active_models(provider, workload)
+                .await?
+                .into_iter()
+                .collect::<Vec<ModelEntry>>();
+            if let Some(entry) = models.first() {
+                return Ok(Some(entry.model.clone()));
+            }
+        }
+
+        Ok(None)
     }
 }

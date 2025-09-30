@@ -28,7 +28,7 @@ pub enum AppError {
     NetworkError(String),
 
     /// Represents a scenario where no provider was available to handle a request.
-    #[error("No available AI provider to handle the request")]
+    #[error("No available AI provider to handle the request. Run 'freegin-ai status' to check provider health and 'freegin-ai list-services' to verify configuration.")]
     NoProviderAvailable,
 }
 

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::providers::Provider;
 
 /// Represents an incoming request to the `/generate` endpoint or CLI.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AIRequest {
     /// The model to use for the generation (e.g., "gpt-4o", "gemini-1.5-pro").
     pub model: String,
@@ -56,6 +56,9 @@ pub struct RequestHints {
     /// Optional explicit provider override.
     #[serde(default)]
     pub provider: Option<String>,
+    /// Desired workload category.
+    #[serde(default)]
+    pub workload: Option<Workload>,
 }
 
 /// Complexity levels for the requested task.
@@ -112,4 +115,36 @@ pub enum ResponseFormat {
     Markdown,
     /// JSON structured response.
     Json,
+}
+
+/// Workload categories used to organise models in the catalog.
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[serde(rename_all = "lowercase")]
+pub enum Workload {
+    /// General conversation and Q&A.
+    Chat,
+    /// Text summarization tasks.
+    Summarization,
+    /// Code generation and analysis.
+    Code,
+    /// Information extraction from text.
+    Extraction,
+    /// Creative writing and ideation.
+    Creative,
+    /// Text classification and labeling.
+    Classification,
+}
+
+impl Workload {
+    /// Returns all valid workload variant names.
+    pub fn variants() -> &'static [&'static str] {
+        &[
+            "chat",
+            "summarization",
+            "code",
+            "extraction",
+            "creative",
+            "classification",
+        ]
+    }
 }

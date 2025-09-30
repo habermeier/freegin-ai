@@ -57,6 +57,15 @@ pub struct ProvidersConfig {
     /// Cohere provider settings (optional).
     #[serde(default)]
     pub cohere: Option<ProviderDetails>,
+    /// Groq provider settings (optional).
+    #[serde(default)]
+    pub groq: Option<ProviderDetails>,
+    /// DeepSeek provider settings (optional).
+    #[serde(default)]
+    pub deepseek: Option<ProviderDetails>,
+    /// Together AI provider settings (optional).
+    #[serde(default)]
+    pub together: Option<ProviderDetails>,
 }
 
 /// A generic structure for a provider's API key and base URL.
