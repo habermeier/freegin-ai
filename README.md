@@ -1,101 +1,347 @@
-# Generative AI Service Abstraction Layer
+# freegin-ai
 
-This project provides a cost-optimized, intelligent abstraction layer for interacting with various generative AI services. It is designed to be a robust, resilient, and scalable platform for programmatic code generation, based on the principles outlined in the accompanying architecture blueprint.
+**A multi-provider AI gateway with intelligent routing, health tracking, and automatic failover.**
 
-## Core Features
+`freegin-ai` is a lightweight abstraction layer that routes AI requests across multiple providers (Groq, DeepSeek, Together AI, Google Gemini, Hugging Face, OpenAI, Anthropic, Cohere). It provides reliable, cost-effective AI access through intelligent provider selection, automatic failover, and comprehensive health tracking.
 
-- **Intelligent routing** dynamically selects the best AI provider based on cost, performance, and real-time availability.
-- **Cost management** enforces strict budget controls with a circuit breaker to prevent overspending.
-- **Resilience** handles API errors, rate limits, and service unavailability with exponential back-off and automatic failover.
-- **Extensibility** allows new AI providers to be added by implementing a common `AIProvider` trait.
-- **Learning & caching** uses a local SQLite database to cache responses and learn provider performance characteristics over time.
+## Why freegin-ai?
 
-## Getting Started
+**Problem:** AI providers have rate limits, outages, and varying costs. Managing multiple API keys and handling failures manually is tedious and error-prone.
 
-### One-Command Bootstrap
+**Solution:** `freegin-ai` automatically:
+- Routes requests to the best available provider based on health status and priorities
+- Falls back to alternative providers when one fails or hits rate limits
+- Tracks provider health with exponential backoff for temporary failures
+- Stores API keys encrypted locally (never committed to version control)
+- Provides clean output modes for piping and code generation
 
-Run the bundled script to install missing prerequisites (Rust toolchain, GNU Make, `sqlx-cli`) and place the binary on your shell path:
+**Free Tier Focus:** The default configuration prioritizes providers with generous free tiers:
+- **Groq**: 14,400 requests/day, ultra-fast inference
+- **DeepSeek**: Unlimited free usage with powerful reasoning
+- **Together AI**: Free access to Llama 3.3 70B
+
+## Quick Start
+
+### 1. Install
 
 ```bash
+# Bootstrap installs Rust, builds the binary, and sets up config
 ./scripts/bootstrap.sh
 ```
 
-This script is idempotent and safe to rerun; it delegates to your platform package manager when it needs to install `make`, installs `sqlx-cli` via Cargo if necessary, seeds `~/.config/freegin-ai/config.toml`, and copies the compiled `freegin-ai` binary to `~/.local/bin` by default (emitting a reminder if that directory is not on your `PATH`). Use `./scripts/bootstrap.sh --system` or `--prefix DIR` to change the installation destination.
-
-### Manual Setup
-
-1. **Install Rust** with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`.
-2. **Install `sqlx-cli`** using `cargo install sqlx-cli` for compile-time checked queries.
-3. **Configure secrets** by copying `.config/template.toml` to `.secrets/app.toml` and filling in provider keys (the `.secrets` directory is ignored by Git).
-4. **Create a `.env` file** if you need overrides (the default database lives under `~/.local/share/freegin-ai/app.db` so this step is optional).
-5. **Ensure GNU Make is available** (macOS/Linux usually ship it; Windows users can rely on WSL or MSYS2).
-6. **Use the Makefile helpers** (feel free to set `PREFIX` or `DESTDIR` to control installation):
-   - `make build` — compile the project without running it.
-   - `make release` — produce an optimised release binary in `target/release/freegin-ai`.
-   - `make run` — start the HTTP service using your current configuration.
-   - `make test` — execute the full test suite.
-- `make install` — copy the release binary and man page to `$(PREFIX)/bin` and `$(PREFIX)/share/man/man1` (defaults to `~/.local`).
-
-The server binds to the host and port defined in your configuration when launched via `make run` or `freegin-ai`.
-
-### Configuration Layout
-
-- User-specific configuration lives at `~/.config/freegin-ai/config.toml` (auto-created by the bootstrap script if missing).
-- Legacy support for `~/.freegin-ai/config.toml` and project-local overrides (`freegin-ai.toml`, `.secrets/app.toml`) remains in place for developers.
-- Environment variables prefixed with `APP__` override individual settings (e.g. `APP__SERVER__PORT=9090`).
-- Provider sections are optional; uncomment the ones you need. Example:
-
-  ```toml
-  [providers.hugging_face]
-  api_key = "hf_api_token"
-  api_base_url = "https://api-inference.huggingface.co"
-  ```
-
-  Add `tags: ["provider:hf"]` to a request payload (or reference a Hugging Face model name such as `org/model`) to route to that provider explicitly.
-
-### Managing Provider Tokens
-
-- Use the CLI helper to store encrypted credentials locally:
-
-  ```bash
-  freegin-ai add-service huggingface
-  ```
-
-  The command prints the Hugging Face token URL, prompts for your key (input hidden), and saves it encrypted in the local SQLite database. You can rerun the command to rotate the token at any time.
-- Remove a stored token with `freegin-ai remove-service huggingface`, or inspect which providers are configured/stored via `freegin-ai list-services`.
-
-### Manual Installation Targets
-
-- Binaries: `$(PREFIX)/bin/freegin-ai` (`PREFIX` defaults to `~/.local`).
-- Manual page: `$(PREFIX)/share/man/man1/freegin-ai.1`.
-- Data directory (database, usage logs): `~/.local/share/freegin-ai/` by default (overridable via `DATABASE_URL`).
-
-Once installed you can consult the manual page via `man freegin-ai` or run `freegin-ai --help` for a quick summary (the bootstrap script prints this output automatically).
-
-### Command-Line Generation
-
-`freegin-ai generate` provides a non-interactive interface for producing completions:
+Or install manually:
 
 ```bash
-echo "Summarise the design." | freegin-ai generate --complexity medium --quality balanced
+cargo build --release
+make install  # Installs to ~/.local/bin
 ```
 
-Key flags:
+### 2. Configure Providers (Interactive)
 
-- `--prompt` / `--prompt-file PATH` – supply the main prompt (defaults to stdin).
-- `--output-file PATH` – write the response to a file instead of stdout.
-- `--context-file PATH` (repeatable) – include additional context snippets.
-- `--metadata key=value` (repeatable) – attach request metadata for auditing.
-- Routing hints: `--complexity low|medium|high`, `--quality standard|balanced|premium`,
-  `--speed fast|normal`, `--guardrail strict|lenient`.
-- `--provider NAME` and `--model NAME` – optional overrides for debugging. When omitted, the router selects the best provider based on hints, past performance, and available tokens.
-- `--format text|markdown|json` – shape the response; JSON wraps the content with metadata.
-- `--emit-metadata` – print the chosen provider info alongside the response when using text/markdown formats.
+The fastest way to get started is the interactive setup wizard:
 
-## Project Goals
+```bash
+freegin-ai --init
+```
 
-- Provide a sustainable pipeline for low-cost, high-quality code generation using multiple AI providers.
-- Maintain strong operational visibility through usage tracking and budgeting guardrails.
-- Offer a developer-friendly API with clear documentation and strict linting/testing standards.
+This walks you through each provider with sign-up URLs, allowing you to:
+- Add API keys for providers you want to use
+- Skip providers you don't need (just press Enter)
+- Re-run anytime to add more providers
 
-Refer to `AGENTS.md` for contribution expectations and `docs/` for deeper architectural references and design documents.
+All keys are stored **encrypted** in a local SQLite database at `~/.local/share/freegin-ai/app.db`.
+
+### 3. Test It
+
+```bash
+# Let the router choose the best provider
+freegin-ai generate --prompt "Hello, world!"
+
+# Check provider status
+freegin-ai status
+
+# See which providers are configured
+freegin-ai list-services
+```
+
+## Usage
+
+### Basic Generation
+
+```bash
+# Simple prompt
+freegin-ai generate --prompt "Explain recursion in one sentence"
+
+# From file
+freegin-ai generate --prompt-file query.txt --output-file response.txt
+
+# With context files
+freegin-ai generate --prompt "Review this code" --context-file src/main.rs
+
+# Force a specific provider
+freegin-ai generate --prompt "Hello" --provider groq
+```
+
+### Output Modes
+
+```bash
+# Default: Clean output (content only, perfect for piping)
+freegin-ai generate --prompt "Write a Python function" > code.py
+
+# Verbose: Show metadata on stderr
+freegin-ai generate --prompt "Hello" --verbose
+# Output:
+# === Metadata ===
+# Provider: groq
+#
+# === Response ===
+# Hello! How can I help you?
+
+# JSON format: Structured output with metadata
+freegin-ai generate --prompt "Hello" --format json
+# Output: {"provider": "groq", "content": "Hello!..."}
+
+# JSON metadata: Separate metadata stream
+freegin-ai generate --prompt "Hello" --emit-metadata
+```
+
+### Routing Hints
+
+Influence provider selection with soft hints:
+
+```bash
+freegin-ai generate \
+  --prompt "Write optimized C++ code" \
+  --complexity high \
+  --quality premium \
+  --speed normal
+```
+
+Available hints:
+- `--complexity`: `low`, `medium`, `high`
+- `--quality`: `standard`, `balanced`, `premium`
+- `--speed`: `fast`, `normal`
+- `--guardrail`: `strict`, `lenient`
+
+### Provider Management
+
+```bash
+# Interactive setup for all providers
+freegin-ai --init
+
+# Add a specific provider
+freegin-ai add-service groq
+freegin-ai add-service deepseek
+freegin-ai add-service together
+
+# List configured providers
+freegin-ai list-services
+# Output:
+# groq: stored
+# deepseek: stored
+# huggingface: none
+
+# Check provider health and active models
+freegin-ai status
+# Shows health status, consecutive failures, last success, etc.
+
+# Remove provider credentials
+freegin-ai remove-service groq
+```
+
+## Supported Providers
+
+| Provider | Free Tier | Speed | Best For |
+|----------|-----------|-------|----------|
+| **Groq** | 14.4K req/day | ⚡ Ultra-fast | Quick queries, high volume |
+| **DeepSeek** | Unlimited | Fast | Heavy usage, reasoning |
+| **Together AI** | Free models | Fast | Diverse model access |
+| **Google Gemini** | 60 req/min | Fast | Multimodal tasks |
+| **Hugging Face** | Rate-limited | Varies | Specialized models |
+| **OpenAI** | Pay-as-you-go | Fast | Production workloads |
+| **Anthropic** | Limited credits | Fast | Complex reasoning |
+| **Cohere** | Free tier | Fast | Experimentation |
+
+See `docs/providers-setup.md` for detailed setup instructions and API key URLs.
+
+## Architecture
+
+### Health Tracking
+
+The health tracking system automatically monitors provider reliability:
+
+- **Error Classification**: Rate limits, auth failures, service outages, transient errors
+- **Exponential Backoff**: Automatic retry delays (1min → 2min → 4min → ... → 60min)
+- **Status Management**:
+  - `Available`: Ready to use
+  - `Degraded`: Temporary issues, will retry after backoff period
+  - `Unavailable`: Critical failure (auth, out of credits), retry after 24 hours
+
+```bash
+# Check provider health
+freegin-ai status
+
+# Provider-specific health
+freegin-ai status --provider groq
+```
+
+### Model Catalog
+
+The model catalog manages workload-specific model selection:
+
+```bash
+# List active models
+freegin-ai list-models
+
+# List models for specific workload
+freegin-ai list-models --workload code
+
+# Add a model to the roster
+freegin-ai adopt-model \
+  --provider groq \
+  --workload code \
+  --model llama-3.3-70b-versatile \
+  --priority 10
+
+# Discover new models using LLM
+freegin-ai refresh-models --provider groq --workload chat
+```
+
+Workload types: `chat`, `code`, `summarization`, `extraction`, `creative`, `classification`
+
+### Configuration
+
+Configuration is loaded from (in priority order):
+
+1. Environment variables: `APP__SERVER__HOST`, `APP__SERVER__PORT`, `DATABASE_URL`
+2. User config: `~/.config/freegin-ai/config.toml`
+3. Legacy locations: `~/.freegin-ai/config.toml`, `freegin-ai.toml`
+
+Example `config.toml`:
+
+```toml
+[server]
+host = "127.0.0.1"
+port = 8080
+
+[database]
+url = "sqlite://~/.local/share/freegin-ai/app.db"
+
+[providers.groq]
+api_key = ""  # Leave empty, use encrypted storage instead
+api_base_url = "https://api.groq.com/openai/v1"
+
+[providers.deepseek]
+api_key = ""
+api_base_url = "https://api.deepseek.com"
+```
+
+**Best Practice**: Use encrypted credential storage (`freegin-ai add-service`) instead of storing keys in the config file.
+
+## HTTP Server Mode
+
+Run as a persistent HTTP service:
+
+```bash
+freegin-ai  # Starts server on configured host:port
+```
+
+API endpoint:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Hello, world!",
+    "hints": {
+      "complexity": "low",
+      "quality": "standard"
+    }
+  }'
+```
+
+## Development
+
+### Build and Test
+
+```bash
+# Development build
+cargo build
+
+# Run tests
+cargo test
+
+# Release build
+cargo build --release
+
+# Install locally
+make install  # Installs to ~/.local/bin
+
+# Run linter
+cargo clippy -- -D warnings
+
+# Format code
+cargo fmt
+```
+
+### Project Structure
+
+```
+freegin-ai/
+├── src/
+│   ├── main.rs           # CLI and server entry point
+│   ├── lib.rs            # Library exports
+│   ├── config.rs         # Configuration management
+│   ├── database.rs       # SQLite setup and migrations
+│   ├── models.rs         # Core data structures
+│   ├── credentials.rs    # Encrypted credential storage
+│   ├── health.rs         # Provider health tracking
+│   ├── catalog.rs        # Model catalog and workload routing
+│   ├── usage.rs          # Usage logging
+│   ├── routes.rs         # HTTP API routes
+│   └── providers/
+│       ├── mod.rs        # Provider trait and enum
+│       ├── router.rs     # Intelligent routing logic
+│       ├── groq.rs       # Groq client
+│       ├── deepseek.rs   # DeepSeek client
+│       ├── together.rs   # Together AI client
+│       ├── google.rs     # Google Gemini client
+│       └── hugging_face.rs  # HuggingFace client
+├── docs/
+│   ├── providers-setup.md      # Provider setup guide
+│   ├── model-catalog-guide.md  # Model catalog documentation
+│   └── man/freegin-ai.1        # Man page
+└── scripts/
+    └── bootstrap.sh      # Installation script
+```
+
+### Adding a New Provider
+
+1. Create provider client implementing `AIProvider` trait in `src/providers/`
+2. Add provider to `Provider` enum in `src/providers/mod.rs`
+3. Add configuration struct to `src/config.rs`
+4. Update router in `src/providers/router.rs` to initialize the provider
+5. Add default models to `src/catalog.rs` seed function
+6. Update `handle_add_service()` and `handle_init()` in `src/main.rs`
+7. Add sign-up URL to help text
+
+## Security
+
+- **Encrypted Storage**: API keys stored using ChaCha20-Poly1305 encryption
+- **No Keys in Git**: `.gitignore` excludes all credential files
+- **Hidden Input**: Password prompts use `rpassword` for hidden terminal input
+- **Database Location**: `~/.local/share/freegin-ai/app.db` (user-only permissions)
+
+## Contributing
+
+See `AGENTS.md` for development workflow and contribution guidelines.
+
+## License
+
+[Add your license here]
+
+## Support
+
+- 📖 Documentation: `freegin-ai --help` or `man freegin-ai`
+- 🐛 Issues: [GitHub Issues](https://github.com/habermeier/freegin-ai/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/habermeier/freegin-ai/discussions)
