@@ -16,9 +16,9 @@
 - Provides clean output modes for piping and code generation
 
 **Free Tier Focus:** The default configuration prioritizes providers with generous free tiers:
-- **Groq**: 14,400 requests/day, ultra-fast inference
-- **DeepSeek**: Unlimited free usage with powerful reasoning
-- **Together AI**: Free access to Llama 3.3 70B
+- **Groq**: 14,400 requests/day, ultra-fast inference (truly free)
+- **DeepSeek**: Unlimited free usage with powerful reasoning (truly free)
+- **Together AI**: Free tier models after $5 deposit (Llama 3.3 70B)
 
 ## Quick Start
 
@@ -155,7 +155,7 @@ freegin-ai remove-service groq
 |----------|-----------|-------|----------|
 | **Groq** | 14.4K req/day | ⚡ Ultra-fast | Quick queries, high volume |
 | **DeepSeek** | Unlimited | Fast | Heavy usage, reasoning |
-| **Together AI** | Free models | Fast | Diverse model access |
+| **Together AI** | Requires $5 deposit | Fast | Llama 3.3 70B free tier |
 | **Google Gemini** | 60 req/min | Fast | Multimodal tasks |
 | **Hugging Face** | Rate-limited | Varies | Specialized models |
 | **OpenAI** | Pay-as-you-go | Fast | Production workloads |

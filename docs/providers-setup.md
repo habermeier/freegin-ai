@@ -42,13 +42,15 @@ This will:
   ```
 
 ### 🤝 Together AI
-- **Free Tier**: Dedicated free models (Llama 3.3 70B)
+- **Pricing**: Requires $5 deposit to access API
+- **Free Models**: Llama 3.3 70B and other free-tier models available after deposit
 - **Best For**: Diverse model access
 - **Get API Key**: https://api.together.xyz/settings/api-keys
 - **Setup (Encrypted Storage - Recommended)**:
   ```bash
   freegin-ai add-service together
   # Follow prompts to enter API key securely
+  # Note: Requires $5 deposit to activate API access
   ```
 
 ## Additional Providers

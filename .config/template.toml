@@ -33,7 +33,7 @@ api_base_url = "https://api.deepseek.com"
 
 [providers.together]
 # Sign up: https://api.together.xyz/settings/api-keys
-# Free tier: Free models available
+# Pricing: Requires $5 deposit to access API, then free models available
 api_key = ""
 api_base_url = "https://api.together.xyz/v1"
 

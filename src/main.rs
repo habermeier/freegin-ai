@@ -689,7 +689,7 @@ Options:
 Providers:
   groq             Groq (ultra-fast, 14.4K requests/day free) - https://console.groq.com/keys
   deepseek         DeepSeek (unlimited free tier) - https://platform.deepseek.com/api_keys
-  together         Together AI (free models available) - https://api.together.xyz/settings/api-keys
+  together         Together AI ($5 deposit, then free models) - https://api.together.xyz/settings/api-keys
   huggingface      Hugging Face Inference API - https://huggingface.co/settings/tokens
   google           Google Gemini - https://makersuite.google.com/app/apikey
   openai           OpenAI - https://platform.openai.com/api-keys
@@ -747,7 +747,7 @@ async fn handle_init() -> Result<(), AppError> {
         (
             Provider::Together,
             "Together AI",
-            "Free models available (Llama 3.3 70B)",
+            "Requires $5 deposit, then free models available (Llama 3.3 70B)",
             "https://api.together.xyz/settings/api-keys",
         ),
         (
