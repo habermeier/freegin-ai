@@ -1487,8 +1487,7 @@ async fn handle_status(
         // Show health details if there are issues
         if health.status != freegin_ai::health::HealthStatus::Available {
             if let Some(error) = &health.last_error {
-                let error_preview = error.chars().take(80).collect::<String>();
-                println!("    Last error: {}", error_preview);
+                println!("    Last error: {}", error);
             }
             if let Some(retry_after) = health.retry_after {
                 use chrono::Utc;

@@ -430,12 +430,12 @@ impl ProviderRouter {
         provider: Provider,
         request: &AIRequest,
     ) -> Result<Option<String>, AppError> {
-        if let Some(model) = request.hints.provider.as_ref() {
-            if !model.is_empty() {
-                return Ok(Some(model.clone()));
-            }
+        // If request already has a model specified, use it
+        if !request.model.is_empty() {
+            return Ok(Some(request.model.clone()));
         }
 
+        // Otherwise, look up the default model for this provider/workload in the catalog
         let workload = request.hints.workload;
         if let Some(catalog) = &self.catalog {
             let models = catalog
