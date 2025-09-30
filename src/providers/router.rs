@@ -376,15 +376,11 @@ impl ProviderRouter {
 
     fn provider_from_model(&self, request: &AIRequest) -> Option<Provider> {
         let model = request.model.to_lowercase();
+
+        // Only match provider-specific model name patterns
+        // For ambiguous names, rely on fallback_order to try providers
         if model.contains("gemini") && self.providers.contains_key(&Provider::Google) {
             return Some(Provider::Google);
-        }
-        if model.contains("huggingface") && self.providers.contains_key(&Provider::HuggingFace) {
-            return Some(Provider::HuggingFace);
-        }
-        if model.contains('/') && self.providers.contains_key(&Provider::HuggingFace) {
-            // Hugging Face models frequently use org/model notation; assume HF if slash present
-            return Some(Provider::HuggingFace);
         }
         if model.contains("gpt") && self.providers.contains_key(&Provider::OpenAI) {
             return Some(Provider::OpenAI);
@@ -395,6 +391,17 @@ impl ProviderRouter {
         if model.contains("cohere") && self.providers.contains_key(&Provider::Cohere) {
             return Some(Provider::Cohere);
         }
+        if model.contains("deepseek") && self.providers.contains_key(&Provider::DeepSeek) {
+            return Some(Provider::DeepSeek);
+        }
+        if model.contains("llama") && model.contains("groq") && self.providers.contains_key(&Provider::Groq) {
+            return Some(Provider::Groq);
+        }
+
+        // For generic model names (e.g., "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"),
+        // don't guess - let the fallback_order try providers in health priority order.
+        // The router will automatically skip unhealthy providers and find the first
+        // available one that accepts the model.
         None
     }
 
