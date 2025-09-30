@@ -690,12 +690,17 @@ Providers:
   groq             Groq (ultra-fast, 1K-14.4K req/day depending on model) - https://console.groq.com/keys
   deepseek         DeepSeek (pay-per-use, very low cost) - https://platform.deepseek.com/api_keys
   cloudflare       Cloudflare Workers AI (10K Neurons/day free) - https://dash.cloudflare.com/profile/api-tokens
+  cerebras         Cerebras AI (1M tokens/day free) - https://cloud.cerebras.ai/
+  mistral          Mistral AI (free tier with rate limits) - https://console.mistral.ai/
   together         Together AI ($5 credit required) - https://api.together.xyz/settings/api-keys
   google           Google Gemini (100 req/day free) - https://makersuite.google.com/app/apikey
+  clarifai         Clarifai AI (1K req/month free) - https://clarifai.com/settings/security
+  github           GitHub Models (50-150 req/day, requires PAT) - https://github.com/settings/tokens
   huggingface      Hugging Face Inference API - https://huggingface.co/settings/tokens
   openai           OpenAI - https://platform.openai.com/api-keys
   anthropic        Anthropic Claude - https://console.anthropic.com/
-  cohere           Cohere - https://dashboard.cohere.com/api-keys",
+  cohere           Cohere - https://dashboard.cohere.com/api-keys
+  openrouter       OpenRouter (50 req/day for :free models) - https://openrouter.ai/keys",
         name = env!("CARGO_PKG_NAME"),
         version = env!("CARGO_PKG_VERSION"),
     );
@@ -764,10 +769,34 @@ async fn handle_init() -> Result<(), AppError> {
             "https://dash.cloudflare.com/profile/api-tokens",
         ),
         (
+            Provider::Cerebras,
+            "Cerebras AI",
+            "1 million tokens/day free (ultra-fast inference)",
+            "https://cloud.cerebras.ai/",
+        ),
+        (
+            Provider::Mistral,
+            "Mistral AI",
+            "Free tier with rate limits",
+            "https://console.mistral.ai/",
+        ),
+        (
             Provider::HuggingFace,
             "Hugging Face",
             "Rate-limited serverless API",
             "https://huggingface.co/settings/tokens",
+        ),
+        (
+            Provider::Clarifai,
+            "Clarifai AI",
+            "1,000 requests/month free",
+            "https://clarifai.com/settings/security",
+        ),
+        (
+            Provider::GitHubModels,
+            "GitHub Models",
+            "50-150 requests/day (requires GitHub PAT with models:read scope)",
+            "https://github.com/settings/tokens",
         ),
         (
             Provider::OpenAI,
@@ -786,6 +815,12 @@ async fn handle_init() -> Result<(), AppError> {
             "Cohere",
             "Free tier for experimentation",
             "https://dashboard.cohere.com/api-keys",
+        ),
+        (
+            Provider::OpenRouter,
+            "OpenRouter",
+            "50 requests/day for :free models (aggregator)",
+            "https://openrouter.ai/keys",
         ),
     ];
 
@@ -867,6 +902,26 @@ async fn handle_add_service(provider: Provider, store: &CredentialStore) -> Resu
             "https://dash.cloudflare.com/profile/api-tokens",
             "Enter Cloudflare API token (input hidden): ",
         ),
+        Provider::Cerebras => (
+            "https://cloud.cerebras.ai/",
+            "Enter Cerebras API key (input hidden): ",
+        ),
+        Provider::Mistral => (
+            "https://console.mistral.ai/",
+            "Enter Mistral API key (input hidden): ",
+        ),
+        Provider::Clarifai => (
+            "https://clarifai.com/settings/security",
+            "Enter Clarifai Personal Access Token (input hidden): ",
+        ),
+        Provider::GitHubModels => (
+            "https://github.com/settings/tokens",
+            "Enter GitHub Personal Access Token with models:read scope (input hidden): ",
+        ),
+        Provider::OpenRouter => (
+            "https://openrouter.ai/keys",
+            "Enter OpenRouter API key (input hidden): ",
+        ),
     };
 
     println!("Visit {} to create an API key.", url);
@@ -910,11 +965,17 @@ async fn handle_list_services(
         Provider::Groq,
         Provider::DeepSeek,
         Provider::Together,
+        Provider::Cloudflare,
+        Provider::Cerebras,
+        Provider::Mistral,
         Provider::HuggingFace,
         Provider::Google,
+        Provider::Clarifai,
+        Provider::GitHubModels,
         Provider::OpenAI,
         Provider::Anthropic,
         Provider::Cohere,
+        Provider::OpenRouter,
     ] {
         let has_config_key = match provider {
             Provider::HuggingFace => config
@@ -968,6 +1029,36 @@ async fn handle_list_services(
             Provider::Cloudflare => config
                 .providers
                 .cloudflare
+                .as_ref()
+                .map(|cfg| !cfg.api_key.trim().is_empty())
+                .unwrap_or(false),
+            Provider::Cerebras => config
+                .providers
+                .cerebras
+                .as_ref()
+                .map(|cfg| !cfg.api_key.trim().is_empty())
+                .unwrap_or(false),
+            Provider::Mistral => config
+                .providers
+                .mistral
+                .as_ref()
+                .map(|cfg| !cfg.api_key.trim().is_empty())
+                .unwrap_or(false),
+            Provider::Clarifai => config
+                .providers
+                .clarifai
+                .as_ref()
+                .map(|cfg| !cfg.api_key.trim().is_empty())
+                .unwrap_or(false),
+            Provider::GitHubModels => config
+                .providers
+                .github_models
+                .as_ref()
+                .map(|cfg| !cfg.api_key.trim().is_empty())
+                .unwrap_or(false),
+            Provider::OpenRouter => config
+                .providers
+                .openrouter
                 .as_ref()
                 .map(|cfg| !cfg.api_key.trim().is_empty())
                 .unwrap_or(false),

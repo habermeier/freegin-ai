@@ -20,9 +20,10 @@ use crate::{
 };
 
 use super::{
-    cloudflare::CloudflareClient, deepseek::DeepSeekClient, google::GoogleClient,
-    groq::GroqClient, hugging_face::HuggingFaceClient, together::TogetherClient, AIProvider,
-    Provider,
+    cerebras::CerebrasClient, clarifai::ClarifaiClient, cloudflare::CloudflareClient,
+    deepseek::DeepSeekClient, github_models::GitHubModelsClient, google::GoogleClient,
+    groq::GroqClient, hugging_face::HuggingFaceClient, mistral::MistralClient,
+    openrouter::OpenRouterClient, together::TogetherClient, AIProvider, Provider,
 };
 
 /// Coordinates AI providers and encapsulates routing logic.
@@ -216,6 +217,146 @@ impl ProviderRouter {
             fallback_order.push(Provider::Cloudflare);
         } else {
             debug!(provider = "cloudflare", "Provider not configured (missing credentials)");
+        }
+
+        // Cerebras AI - check encrypted storage first, then config
+        let cerebras_cfg = config.providers.cerebras.as_ref();
+        let cerebras_token_cfg = cerebras_cfg.and_then(|cfg| {
+            let trimmed = cfg.api_key.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        });
+        let cerebras_token = match cerebras_token_cfg {
+            Some(token) => Some(token),
+            None => store.get_token(Provider::Cerebras).await?,
+        };
+        if let Some(token) = cerebras_token {
+            let base_url = store
+                .resolve_base_url(
+                    Provider::Cerebras,
+                    cerebras_cfg.map(|cfg| cfg.api_base_url.as_str()),
+                )
+                .to_string();
+            let client = CerebrasClient::new(token, base_url)?;
+            drop(providers.insert(Provider::Cerebras, Arc::new(client)));
+            fallback_order.push(Provider::Cerebras);
+        } else {
+            debug!(provider = "cerebras", "Provider not configured (missing credentials)");
+        }
+
+        // Mistral AI - check encrypted storage first, then config
+        let mistral_cfg = config.providers.mistral.as_ref();
+        let mistral_token_cfg = mistral_cfg.and_then(|cfg| {
+            let trimmed = cfg.api_key.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        });
+        let mistral_token = match mistral_token_cfg {
+            Some(token) => Some(token),
+            None => store.get_token(Provider::Mistral).await?,
+        };
+        if let Some(token) = mistral_token {
+            let base_url = store
+                .resolve_base_url(
+                    Provider::Mistral,
+                    mistral_cfg.map(|cfg| cfg.api_base_url.as_str()),
+                )
+                .to_string();
+            let client = MistralClient::new(token, base_url)?;
+            drop(providers.insert(Provider::Mistral, Arc::new(client)));
+            fallback_order.push(Provider::Mistral);
+        } else {
+            debug!(provider = "mistral", "Provider not configured (missing credentials)");
+        }
+
+        // Clarifai AI - check encrypted storage first, then config
+        let clarifai_cfg = config.providers.clarifai.as_ref();
+        let clarifai_token_cfg = clarifai_cfg.and_then(|cfg| {
+            let trimmed = cfg.api_key.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        });
+        let clarifai_token = match clarifai_token_cfg {
+            Some(token) => Some(token),
+            None => store.get_token(Provider::Clarifai).await?,
+        };
+        if let Some(token) = clarifai_token {
+            let base_url = store
+                .resolve_base_url(
+                    Provider::Clarifai,
+                    clarifai_cfg.map(|cfg| cfg.api_base_url.as_str()),
+                )
+                .to_string();
+            let client = ClarifaiClient::new(token, base_url)?;
+            drop(providers.insert(Provider::Clarifai, Arc::new(client)));
+            fallback_order.push(Provider::Clarifai);
+        } else {
+            debug!(provider = "clarifai", "Provider not configured (missing credentials)");
+        }
+
+        // GitHub Models - check encrypted storage first, then config
+        let github_models_cfg = config.providers.github_models.as_ref();
+        let github_models_token_cfg = github_models_cfg.and_then(|cfg| {
+            let trimmed = cfg.api_key.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        });
+        let github_models_token = match github_models_token_cfg {
+            Some(token) => Some(token),
+            None => store.get_token(Provider::GitHubModels).await?,
+        };
+        if let Some(token) = github_models_token {
+            let base_url = store
+                .resolve_base_url(
+                    Provider::GitHubModels,
+                    github_models_cfg.map(|cfg| cfg.api_base_url.as_str()),
+                )
+                .to_string();
+            let client = GitHubModelsClient::new(token, base_url)?;
+            drop(providers.insert(Provider::GitHubModels, Arc::new(client)));
+            fallback_order.push(Provider::GitHubModels);
+        } else {
+            debug!(provider = "github_models", "Provider not configured (missing credentials)");
+        }
+
+        // OpenRouter - check encrypted storage first, then config
+        let openrouter_cfg = config.providers.openrouter.as_ref();
+        let openrouter_token_cfg = openrouter_cfg.and_then(|cfg| {
+            let trimmed = cfg.api_key.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        });
+        let openrouter_token = match openrouter_token_cfg {
+            Some(token) => Some(token),
+            None => store.get_token(Provider::OpenRouter).await?,
+        };
+        if let Some(token) = openrouter_token {
+            let base_url = store
+                .resolve_base_url(
+                    Provider::OpenRouter,
+                    openrouter_cfg.map(|cfg| cfg.api_base_url.as_str()),
+                )
+                .to_string();
+            let client = OpenRouterClient::new(token, base_url)?;
+            drop(providers.insert(Provider::OpenRouter, Arc::new(client)));
+            fallback_order.push(Provider::OpenRouter);
+        } else {
+            debug!(provider = "openrouter", "Provider not configured (missing credentials)");
         }
 
         Self::from_map_internal(providers, fallback_order, usage_logger, catalog)

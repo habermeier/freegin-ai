@@ -422,6 +422,95 @@ impl CatalogStore {
                 20,
                 "OpenAI open-source 120B model",
             ),
+            // Cerebras AI defaults (ultra-fast, 1M tokens/day free)
+            (
+                Provider::Cerebras,
+                Workload::Chat,
+                "llama-3.1-70b",
+                12,
+                "Ultra-fast Llama 3.1 70B",
+            ),
+            (
+                Provider::Cerebras,
+                Workload::Code,
+                "llama-3.1-70b",
+                12,
+                "Fast code-capable model",
+            ),
+            (
+                Provider::Cerebras,
+                Workload::Summarization,
+                "llama-3.1-8b",
+                15,
+                "Fast summarization with 8B model",
+            ),
+            // Mistral AI defaults (free tier with rate limits)
+            (
+                Provider::Mistral,
+                Workload::Chat,
+                "mistral-small-latest",
+                22,
+                "Mistral Small for chat",
+            ),
+            (
+                Provider::Mistral,
+                Workload::Code,
+                "mistral-small-latest",
+                22,
+                "Mistral Small for code",
+            ),
+            (
+                Provider::Mistral,
+                Workload::Summarization,
+                "mistral-small-latest",
+                25,
+                "Mistral Small for summarization",
+            ),
+            // Clarifai AI defaults (1K requests/month free)
+            (
+                Provider::Clarifai,
+                Workload::Chat,
+                "gpt-4",
+                45,
+                "GPT-4 via Clarifai",
+            ),
+            (
+                Provider::Clarifai,
+                Workload::Code,
+                "gpt-4",
+                45,
+                "GPT-4 code via Clarifai",
+            ),
+            // GitHub Models defaults (50-150 RPD depending on plan)
+            (
+                Provider::GitHubModels,
+                Workload::Chat,
+                "gpt-4o",
+                35,
+                "GPT-4o via GitHub",
+            ),
+            (
+                Provider::GitHubModels,
+                Workload::Code,
+                "gpt-4o",
+                35,
+                "GPT-4o code via GitHub",
+            ),
+            // OpenRouter defaults (50 req/day for :free models)
+            (
+                Provider::OpenRouter,
+                Workload::Chat,
+                "deepseek/deepseek-r1:free",
+                50,
+                "DeepSeek R1 free via OpenRouter",
+            ),
+            (
+                Provider::OpenRouter,
+                Workload::Code,
+                "deepseek/deepseek-r1:free",
+                50,
+                "DeepSeek R1 code via OpenRouter",
+            ),
         ];
 
         for (provider, workload, model, priority, rationale) in defaults {

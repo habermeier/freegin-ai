@@ -51,6 +51,38 @@ api_base_url = "https://generativelanguage.googleapis.com/v1beta"
 api_key = ""
 api_base_url = ""
 
+[providers.cerebras]
+# Sign up: https://cloud.cerebras.ai/
+# Free tier: 1 million tokens/day (ultra-fast inference)
+api_key = ""
+api_base_url = "https://api.cerebras.ai/v1"
+
+[providers.mistral]
+# Sign up: https://console.mistral.ai/
+# Free tier: Available with rate limits
+api_key = ""
+api_base_url = "https://api.mistral.ai/v1"
+
+[providers.clarifai]
+# Sign up: https://clarifai.com/settings/security
+# Free tier: 1,000 requests/month
+# Note: Requires Personal Access Token (PAT)
+api_key = ""
+api_base_url = "https://api.clarifai.com/v2/ext/openai/v1"
+
+[providers.github_models]
+# Sign up: https://github.com/settings/tokens
+# Free tier: 50-150 requests/day (depending on GitHub Copilot plan)
+# Note: Requires GitHub Personal Access Token with models:read scope
+api_key = ""
+api_base_url = "https://models.inference.ai.azure.com"
+
+[providers.openrouter]
+# Sign up: https://openrouter.ai/keys
+# Free tier: 50 requests/day for :free models (aggregator)
+api_key = ""
+api_base_url = "https://openrouter.ai/api/v1"
+
 [providers.hugging_face]
 # Sign up: https://huggingface.co/settings/tokens
 # Free tier: Rate-limited serverless API

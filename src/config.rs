@@ -69,6 +69,21 @@ pub struct ProvidersConfig {
     /// Cloudflare Workers AI provider settings (optional).
     #[serde(default)]
     pub cloudflare: Option<ProviderDetails>,
+    /// Cerebras AI provider settings (optional).
+    #[serde(default)]
+    pub cerebras: Option<ProviderDetails>,
+    /// Mistral AI provider settings (optional).
+    #[serde(default)]
+    pub mistral: Option<ProviderDetails>,
+    /// Clarifai AI provider settings (optional).
+    #[serde(default)]
+    pub clarifai: Option<ProviderDetails>,
+    /// GitHub Models provider settings (optional).
+    #[serde(default, rename = "github_models")]
+    pub github_models: Option<ProviderDetails>,
+    /// OpenRouter provider settings (optional).
+    #[serde(default)]
+    pub openrouter: Option<ProviderDetails>,
 }
 
 /// A generic structure for a provider's API key and base URL.
