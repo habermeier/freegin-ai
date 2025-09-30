@@ -25,7 +25,7 @@ pub enum Provider {
     Cohere,
     /// Groq models (ultra-fast inference).
     Groq,
-    /// DeepSeek models (unlimited free tier).
+    /// DeepSeek models (pay-per-use, very low cost).
     DeepSeek,
     /// Together AI models.
     Together,

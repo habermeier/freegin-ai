@@ -31,6 +31,15 @@ Execute these searches and compile results:
 8. "best free AI APIs reddit 2025"
 9. "LLM API rate limits comparison"
 10. "new AI providers 2025"
+11. "GitHub Models free API 2025"
+12. "OpenRouter.ai free models 2025"
+```
+
+**Rate Limit Deep Dive** (if exact numbers not found in above):
+```
+13. "[provider] API rate limits" site:reddit.com
+14. "[provider] free tier how many requests" site:github.com
+15. "[provider] rate limit" site:community.[provider-domain]
 ```
 
 #### Information Sources (Priority Order)
@@ -85,7 +94,68 @@ For each provider found, gather this information:
 - ❌ Undocumented API changes frequently
 - ❌ Poor community reputation
 - ❌ Service frequently down
-- ❌ Free tier severely limited (<100 requests/day)
+- ❌ No actual free tier (only trials or pay-per-use)
+
+**Note**: Even limited free tiers (50+ req/day) should be included! The goal is to maximize free options.
+
+#### Provider Types: Direct vs Aggregator
+
+**Direct Providers** (Preferred):
+- Examples: Groq, DeepSeek, Together AI, Google Gemini
+- ✅ PRO: Better rate limits, faster response, official support
+- ✅ PRO: No additional layer of abstraction
+- ⚠️ CON: Need separate API keys for each
+- **Priority**: Always prefer direct providers when available
+
+**Aggregator Platforms** (Secondary):
+- Examples: OpenRouter, AI/ML API
+- ✅ PRO: One API key for multiple providers
+- ✅ PRO: Easy to switch between models
+- ❌ CON: Often severely limited free tiers (50 req/day)
+- ❌ CON: Additional latency from routing layer
+- ❌ CON: Pricing markup over direct provider costs
+- **Priority**: Only consider if direct provider unavailable or for fallback
+
+**Decision Criteria**:
+1. Can you access the provider directly? → Use direct provider
+2. Does the aggregator offer unique free models? → Consider it
+3. Are aggregator limits better than direct? → Unlikely, but check
+4. Is the aggregator just for convenience? → Skip it, use direct
+
+**Example**:
+- ✅ Good: Add Groq directly (14.4K req/day free)
+- ❌ Bad: Add OpenRouter to access Groq (50 req/day free)
+- ⚠️ Maybe: Add OpenRouter ONLY if it has exclusive free models not available elsewhere
+
+#### Free Tier Classification
+
+Understand the different types of "free" to evaluate properly:
+
+1. **Truly Free (No Charges Ever)**
+   - Examples: Groq (14.4K req/day), Google Gemini (1500 req/day for Flash)
+   - No credit card required
+   - No surprise charges
+   - **Priority**: Highest
+
+2. **Free with Deposit/Verification**
+   - Examples: Together AI ($5 deposit to get API key)
+   - One-time payment to unlock free tier
+   - After deposit, specific models remain free
+   - **Priority**: High (still better than pay-per-use)
+
+3. **Limited Free Tier**
+   - Examples: OpenRouter (50 req/day), GitHub Models (rate limited)
+   - Genuinely free but severely limited
+   - Good for light usage or fallback
+   - **Priority**: Medium (still include!)
+
+4. **Cheap Pay-As-You-Go (NOT Free)**
+   - Examples: DeepSeek ($0.028/M tokens)
+   - Very affordable but charges per use
+   - Can add up with heavy usage
+   - **Priority**: Low (document as "very low cost", not "free")
+
+**Action**: Label providers accurately in documentation. Don't call pay-per-use "free" even if cheap.
 
 ### Step 3: Model Name Verification
 
@@ -97,9 +167,17 @@ For each provider found, gather this information:
    ```
    Search: "[provider name] API model list 2025"
    Search: "[provider name] available models documentation"
+   Search: "[provider name] supported models"
    ```
 
-2. **Verify via API (if you have access)**
+2. **Check for Deprecation Notices**
+   ```
+   Search: "[model-name] deprecated" site:github.com
+   Search: "[provider name] model deprecation 2025"
+   Search: "[provider name] changelog" OR "release notes"
+   ```
+
+3. **Verify via API (if you have access)**
    ```bash
    # Groq example
    curl https://api.groq.com/openai/v1/models \
@@ -110,15 +188,30 @@ For each provider found, gather this information:
      -H "Authorization: Bearer $DEEPSEEK_API_KEY"
    ```
 
-3. **Check Recent GitHub Issues**
+4. **Test with actual CLI (CRITICAL)**
+   ```bash
+   # Test each provider's default model
+   freegin-ai generate --provider groq --prompt "OK" --verbose
+   freegin-ai generate --provider deepseek --prompt "OK" --verbose
+   freegin-ai generate --provider together --prompt "OK" --verbose
+   freegin-ai generate --provider google --prompt "OK" --verbose
+
+   # Look for these errors:
+   # - "model not found" (404)
+   # - "deprecated"
+   # - "access denied"
+   ```
+
+5. **Check Recent GitHub Issues**
    ```
    Search: "[provider name] model not found" site:github.com
    Search: "[provider name] deprecated models" site:github.com
    ```
 
-4. **Cross-reference with Community**
+6. **Cross-reference with Community**
    ```
    Search: "[model name] [provider name] working" site:reddit.com
+   Search: "[model name] still available 2025"
    ```
 
 #### Common Model Naming Patterns
@@ -130,6 +223,142 @@ For each provider found, gather this information:
 - **OpenAI**: `gpt-4o`, `gpt-4o-mini`, `gpt-3.5-turbo`
 
 **Note**: Free tier models often have "free" or "turbo" in the name (Together AI pattern).
+
+### Step 4: Search Result Evaluation
+
+Learn to distinguish good search results from misleading ones.
+
+#### ✅ Good Search Results (Trust These)
+
+**Official Documentation**:
+```
+✅ "Groq API Documentation - Models" (console.groq.com/docs/models)
+   → Lists current model names with official IDs
+
+✅ "DeepSeek Platform Pricing" (platform.deepseek.com/pricing)
+   → Shows actual costs per million tokens
+
+✅ "Google AI Studio Free Tier" (ai.google.dev/pricing)
+   → Official rate limits directly from Google
+```
+
+**Recent Community Discussions**:
+```
+✅ Reddit post from 7 days ago: "Groq just deprecated llama-3.1 models"
+   → Recent, specific, verifiable claim
+
+✅ GitHub issue from Jan 2025: "Model not found: llama-3.1-70b-versatile"
+   → Dated evidence, links to provider docs
+
+✅ Hacker News comment with API test results (last 30 days)
+   → Includes actual curl commands and responses
+```
+
+**Verifiable Benchmarks**:
+```
+✅ artificialanalysis.ai comparison chart (updated monthly)
+   → Shows current speeds and costs
+
+✅ Provider's official changelog or release notes
+   → Dated announcements of changes
+```
+
+#### ❌ Poor Search Results (Be Skeptical)
+
+**Outdated Information**:
+```
+❌ Medium article from 2023: "Best Free AI APIs"
+   → Too old, providers change frequently
+
+❌ Blog post with no update date
+   → Can't verify recency
+
+❌ Comparison chart without source dates
+   → Could be months/years old
+```
+
+**Vague Claims**:
+```
+❌ "DeepSeek has unlimited free API"
+   → Need to verify with official docs (this turned out to be FALSE!)
+
+❌ "Groq is the fastest and totally free"
+   → Missing specific numbers (how fast? what limits?)
+
+❌ "Together AI gives you free models"
+   → Which models? What are the actual limits?
+```
+
+**Aggregator Marketing**:
+```
+❌ "Access 300+ models free with OpenRouter!"
+   → Check the fine print (only 50 req/day = not usable)
+
+❌ "Free tier available!" (from reseller)
+   → Compare to direct provider's free tier
+```
+
+**Unverifiable Sources**:
+```
+❌ Random tweet with no sources
+❌ Forum post from anonymous user
+❌ SEO blog farm content
+❌ YouTube video description (unless from official channel)
+```
+
+#### 🔍 Verification Checklist
+
+When you find information:
+1. **Check the date**: Is it from the last 3 months?
+2. **Check the source**: Official docs > Community > Blogs
+3. **Cross-reference**: Found on 2+ independent sources?
+4. **Verify claims**: Can you test it with an API call?
+5. **Check provider official**: Does their site confirm this?
+
+#### 📊 Search Troubleshooting
+
+**Problem**: Can't find exact rate limits
+
+**Solutions**:
+1. Try: `"[provider] API rate limits" site:reddit.com`
+   - Users often post their actual limits
+2. Try: `"[provider] free tier how many requests" site:github.com`
+   - Developers document limits in READMEs
+3. Check provider's community forum or Discord
+   - Direct from support or other users
+4. Look at provider's status/dashboard page
+   - May show limits when logged in
+5. Test it directly with API calls
+   - Make requests until rate limited, note the error
+
+**Problem**: Conflicting information about pricing
+
+**Solutions**:
+1. Always trust official pricing page over blogs
+2. Check if price is regional (US vs EU vs Asia)
+3. Look for announcement date of price change
+4. Test with minimal API call to see actual behavior
+
+**Problem**: Model name not documented
+
+**Solutions**:
+1. Search: `"[provider] /v1/models" site:github.com`
+   - Find examples of API calls listing models
+2. Try: `curl [provider-api-url]/v1/models -H "Authorization: Bearer $KEY"`
+   - Get official model list directly
+3. Check provider's SDK/library code
+   - Look for hardcoded model names
+4. Search recent GitHub issues: `"model not found" site:github.com/[provider]`
+   - Find what models users are trying
+
+**Problem**: Provider claims "free" but unclear if API is free
+
+**Solutions**:
+1. Distinguish: Free web UI ≠ Free API
+2. Look for "API pricing" page specifically
+3. Search: `"[provider] API cost" OR "[provider] API free"`
+4. Check for phrases: "pay-as-you-go", "per token", "requires deposit"
+5. When in doubt: NOT free (like DeepSeek case!)
 
 ---
 
@@ -275,6 +504,62 @@ impl AIProvider for NewProviderClient {
 ```
 
 **Don't forget**: Add `pub mod newprovider;` to `src/providers/mod.rs`
+
+#### Special Authentication Patterns
+
+Some providers use non-standard authentication. Document these carefully:
+
+**Standard Pattern (OpenAI-compatible)**:
+```rust
+// Groq, DeepSeek, Together AI, OpenAI, etc.
+let response = self.http_client
+    .post(&url)
+    .header("Authorization", format!("Bearer {}", self.api_key))
+    .header("Content-Type", "application/json")
+    .json(&payload)
+    .send()
+    .await?;
+```
+
+**GitHub Models Pattern** (if adding):
+```rust
+// Uses GitHub Personal Access Token with "models:read" permission
+// API: https://models.inference.ai.azure.com
+// Authentication: GitHub PAT (not API key!)
+let response = self.http_client
+    .post("https://models.inference.ai.azure.com/chat/completions")
+    .header("Authorization", format!("Bearer {}", self.github_token))
+    .header("Content-Type", "application/json")
+    .json(&payload)
+    .send()
+    .await?;
+
+// Setup instructions for users:
+// 1. Go to github.com/settings/tokens
+// 2. Create new token with "models:read" scope
+// 3. Use token as API key in config
+```
+
+**Google Gemini Pattern**:
+```rust
+// Uses API key as query parameter, not header
+let url = format!(
+    "{}/models/{}:generateContent?key={}",
+    self.base_url, model, self.api_key
+);
+let response = self.http_client
+    .post(&url)
+    .header("Content-Type", "application/json")
+    .json(&payload)
+    .send()
+    .await?;
+```
+
+**Key Points**:
+- Document authentication method in provider client comments
+- Include setup instructions in docs/providers-setup.md
+- Test authentication before committing code
+- Verify error messages are clear when auth fails
 
 ### 3. Update Configuration
 
@@ -474,6 +759,155 @@ Update "Free Tier Focus" section if relevant.
 
 ---
 
+## 🔐 Pre-Commit Testing Workflow
+
+**CRITICAL**: Test everything BEFORE committing. Never commit broken code or expose secrets.
+
+### 1. Secret Safety Check
+
+```bash
+# Before ANY git add/commit, verify no secrets exposed
+echo "=== Checking for exposed secrets ==="
+
+# Check modified files for API keys
+git diff | grep -iE "api[_-]?key.*=.*['\"]?[a-zA-Z0-9]{20,}" && echo "❌ DANGER: API key found!" || echo "✅ No API keys in diff"
+
+# Check for token patterns
+git diff | grep -iE "Bearer [a-zA-Z0-9-_]+" && echo "❌ DANGER: Bearer token found!" || echo "✅ No bearer tokens in diff"
+
+# Check for common secret environment variables
+git diff | grep -iE "(GROQ|DEEPSEEK|TOGETHER|GOOGLE|OPENAI)_API_KEY=.+" && echo "❌ DANGER: API key in env!" || echo "✅ No env API keys"
+
+# Verify config files only have empty strings
+git diff .config/template.toml | grep "api_key = \"\"" || echo "⚠️  WARNING: Check template.toml has empty api_key"
+
+echo ""
+echo "If ANY ❌ DANGER messages appeared, DO NOT COMMIT!"
+echo "Review the file and remove the secret before proceeding."
+```
+
+### 2. Test API Keys Locally (Before Code Changes)
+
+Before writing any code, verify you have working API keys:
+
+```bash
+echo "=== Testing API Keys ==="
+
+# Test Groq
+echo "Testing Groq..."
+if [ -n "$GROQ_API_KEY" ]; then
+  curl -s https://api.groq.com/openai/v1/models \
+    -H "Authorization: Bearer $GROQ_API_KEY" \
+    | grep -q "llama-3.3-70b-versatile" && echo "✅ Groq key valid" || echo "❌ Groq key invalid"
+else
+  echo "⚠️  GROQ_API_KEY not set"
+fi
+
+# Test DeepSeek
+echo "Testing DeepSeek..."
+if [ -n "$DEEPSEEK_API_KEY" ]; then
+  curl -s https://api.deepseek.com/models \
+    -H "Authorization: Bearer $DEEPSEEK_API_KEY" \
+    | grep -q "deepseek-chat" && echo "✅ DeepSeek key valid" || echo "❌ DeepSeek key invalid"
+else
+  echo "⚠️  DEEPSEEK_API_KEY not set"
+fi
+
+# Test Google Gemini
+echo "Testing Google..."
+if [ -n "$GOOGLE_API_KEY" ]; then
+  curl -s "https://generativelanguage.googleapis.com/v1/models?key=$GOOGLE_API_KEY" \
+    | grep -q "gemini" && echo "✅ Google key valid" || echo "❌ Google key invalid"
+else
+  echo "⚠️  GOOGLE_API_KEY not set"
+fi
+
+# Test Together AI
+echo "Testing Together AI..."
+if [ -n "$TOGETHER_API_KEY" ]; then
+  curl -s https://api.together.xyz/v1/models \
+    -H "Authorization: Bearer $TOGETHER_API_KEY" \
+    | grep -q "meta-llama" && echo "✅ Together AI key valid" || echo "❌ Together AI key invalid"
+else
+  echo "⚠️  TOGETHER_API_KEY not set"
+fi
+
+echo ""
+echo "=== Test Complete ==="
+echo "Only proceed with implementation if all required keys are valid."
+```
+
+### 3. Test After Code Changes
+
+After implementing provider client, test before moving on:
+
+```bash
+# Rebuild
+cargo build --release
+
+# Test provider works
+freegin-ai generate --provider newprovider --prompt "test" --verbose
+
+# Expected output:
+# === Metadata ===
+# Provider: newprovider
+# Model: model-name
+# ...
+# === Response ===
+# [actual response content]
+
+# If you see error messages:
+# - "No available AI provider" → Provider not initialized
+# - "model not found" → Wrong model name
+# - "unauthorized" → API key issue
+# - "rate limit" → API key valid but hitting limits
+```
+
+### 4. Integration Test All Providers
+
+After making changes, test ALL providers work:
+
+```bash
+# Run batch test (from earlier in guide)
+for provider in groq deepseek together google; do
+  echo "Testing $provider..."
+  freegin-ai generate --provider $provider --prompt "OK" --verbose 2>&1 | head -10
+done
+
+# Any errors? Fix before committing!
+```
+
+### 5. Verify Health Tracking
+
+```bash
+# Check all providers show health status
+freegin-ai status
+
+# Should show:
+# ═══ GROQ ✓ AVAILABLE ═══
+# ═══ DEEPSEEK ✓ AVAILABLE ═══
+# etc.
+
+# If any show ✗ UNAVAILABLE or ⚠ DEGRADED without recent failures:
+# → Provider not configured correctly
+```
+
+### 6. Final Pre-Commit Checklist
+
+- [ ] No secrets in `git diff`
+- [ ] All new providers tested with real API calls
+- [ ] All existing providers still work
+- [ ] `cargo build --release` succeeds without warnings
+- [ ] `cargo clippy -- -D warnings` passes
+- [ ] Documentation updated (README, providers-setup.md)
+- [ ] Config template has empty API keys
+- [ ] Help text includes new provider (if added)
+- [ ] Commit message describes what was tested
+
+**Only proceed to commit if all items checked!**
+
+---
+
 ## 🧪 Testing Phase
 
 ### 1. Build and Install
@@ -566,19 +1000,42 @@ freegin-ai status --provider newprovider
 # Should show: ⚠ DEGRADED with error message
 ```
 
-### 8. Test Model Name Updates
+### 8. Test Model Name Updates (CRITICAL)
 
 For existing providers, verify model names still work:
 
 ```bash
-# Test each provider with default model
-for provider in groq deepseek together google; do
+# Batch test all providers with error detection
+echo "=== Testing All Provider Models ==="
+for provider in groq deepseek together google huggingface; do
+  echo ""
   echo "Testing $provider..."
-  freegin-ai generate --provider $provider --prompt "Say OK" --verbose
+  output=$(freegin-ai generate --provider $provider --prompt "OK" --verbose 2>&1)
+
+  # Check for errors
+  if echo "$output" | grep -qiE "(404|not found|deprecated|model.*not.*exist)"; then
+    echo "❌ FAIL - $provider has model issues:"
+    echo "$output" | grep -iE "(404|not found|deprecated|error)"
+  elif echo "$output" | grep -q "No available AI provider"; then
+    echo "⚠️  SKIP - $provider not configured"
+  elif echo "$output" | grep -qE "(Provider: $provider|OK)"; then
+    echo "✅ OK - $provider working"
+  else
+    echo "⚠️  UNKNOWN - Check manually:"
+    echo "$output"
+  fi
 done
 
-# Any 404 "model not found" errors indicate model names need updating
+echo ""
+echo "=== Test Complete ==="
+echo "Any ❌ FAIL indicates model names need updating"
 ```
+
+**Interpretation**:
+- `✅ OK`: Model working correctly
+- `❌ FAIL`: Model deprecated/not found → **UPDATE NEEDED**
+- `⚠️ SKIP`: Provider not configured (expected if no API key)
+- `⚠️ UNKNOWN`: Manual review needed
 
 ---
 

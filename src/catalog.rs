@@ -316,11 +316,11 @@ impl CatalogStore {
             (
                 Provider::Groq,
                 Workload::Creative,
-                "llama-3.1-70b-versatile",
+                "llama-3.3-70b-versatile",
                 15,
                 "Creative and versatile",
             ),
-            // DeepSeek defaults (unlimited free tier)
+            // DeepSeek defaults (pay-as-you-go, very low cost)
             (
                 Provider::DeepSeek,
                 Workload::Chat,

@@ -688,7 +688,7 @@ Options:
 
 Providers:
   groq             Groq (ultra-fast, 14.4K requests/day free) - https://console.groq.com/keys
-  deepseek         DeepSeek (unlimited free tier) - https://platform.deepseek.com/api_keys
+  deepseek         DeepSeek (pay-per-use, very low cost) - https://platform.deepseek.com/api_keys
   together         Together AI ($5 deposit, then free models) - https://api.together.xyz/settings/api-keys
   huggingface      Hugging Face Inference API - https://huggingface.co/settings/tokens
   google           Google Gemini - https://makersuite.google.com/app/apikey

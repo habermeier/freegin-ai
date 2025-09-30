@@ -1,7 +1,7 @@
 //! DeepSeek provider connector implementing the `AIProvider` trait.
 //!
-//! DeepSeek provides unlimited free inference with state-of-the-art models.
-//! Free tier: Unlimited usage
+//! DeepSeek provides pay-as-you-go inference with state-of-the-art models.
+//! Pricing: Very low cost ($0.028-$2.19 per million tokens)
 //! Get API key: https://platform.deepseek.com/api_keys
 
 use async_trait::async_trait;

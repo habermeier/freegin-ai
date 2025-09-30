@@ -30,11 +30,12 @@ This will:
   # Follow prompts to enter API key securely
   ```
 
-### 🎯 DeepSeek (Best Value - Unlimited Free)
-- **Free Tier**: Unlimited usage!
+### 🎯 DeepSeek (Low Cost Pay-As-You-Go)
+- **Pricing**: Pay-per-use ($0.028/M input tokens, $2.19/M output for R1)
 - **Models**: DeepSeek-V3, DeepSeek-R1 (rivals OpenAI o1)
-- **Best For**: Heavy usage, reasoning tasks
+- **Best For**: Affordable reasoning tasks, low-cost inference
 - **Get API Key**: https://platform.deepseek.com/api_keys
+- **Note**: API requires payment (very cheap), web chat interface is free
 - **Setup (Encrypted Storage - Recommended)**:
   ```bash
   freegin-ai add-service deepseek
@@ -116,7 +117,7 @@ The system automatically seeds these models for each provider:
 - **Chat**: `llama-3.3-70b-versatile` (priority 10)
 - **Code**: `llama-3.3-70b-versatile` (priority 10)
 - **Summarization**: `llama-3.3-70b-versatile` (priority 20)
-- **Creative**: `llama-3.1-70b-versatile` (priority 15)
+- **Creative**: `llama-3.3-70b-versatile` (priority 15)
 
 ### DeepSeek
 - **All Workloads**: `deepseek-chat` (priorities 15-25)
@@ -134,10 +135,10 @@ The system automatically seeds these models for each provider:
 ## Priority System
 
 Lower priority numbers are tried first:
-- **10-20**: Groq (fastest)
-- **15-25**: DeepSeek (unlimited)
-- **30**: Together AI
-- **35-40**: Google Gemini
+- **10-20**: Groq (fastest, truly free)
+- **15-25**: DeepSeek (pay-per-use, very cheap)
+- **30**: Together AI (requires $5 deposit)
+- **35-40**: Google Gemini (rate-limited free)
 
 ## Testing Your Setup
 
@@ -177,7 +178,7 @@ freegin-ai generate --prompt "Hello, world!"
 For best reliability and cost optimization:
 
 1. **Primary**: Groq (fast, generous free tier)
-2. **Backup**: DeepSeek (unlimited, great for complex tasks)
+2. **Backup**: DeepSeek (very low cost, great for complex reasoning)
 3. **Fallback**: Together AI or Google Gemini
 4. **Production**: Consider paid tiers for mission-critical workloads
 

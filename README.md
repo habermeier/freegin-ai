@@ -17,7 +17,7 @@
 
 **Free Tier Focus:** The default configuration prioritizes providers with generous free tiers:
 - **Groq**: 14,400 requests/day, ultra-fast inference (truly free)
-- **DeepSeek**: Unlimited free usage with powerful reasoning (truly free)
+- **DeepSeek**: Pay-as-you-go (very low cost: $0.028-$2.19/M tokens)
 - **Together AI**: Free tier models after $5 deposit (Llama 3.3 70B)
 
 ## Quick Start
@@ -154,7 +154,7 @@ freegin-ai remove-service groq
 | Provider | Free Tier | Speed | Best For |
 |----------|-----------|-------|----------|
 | **Groq** | 14.4K req/day | ⚡ Ultra-fast | Quick queries, high volume |
-| **DeepSeek** | Unlimited | Fast | Heavy usage, reasoning |
+| **DeepSeek** | Pay-per-use ($0.028-$2.19/M) | Fast | Low-cost reasoning |
 | **Together AI** | Requires $5 deposit | Fast | Llama 3.3 70B free tier |
 | **Google Gemini** | 60 req/min | Fast | Multimodal tasks |
 | **Hugging Face** | Rate-limited | Varies | Specialized models |
