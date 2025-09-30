@@ -21,27 +21,35 @@ url = ""
 
 [providers.groq]
 # Sign up: https://console.groq.com/keys
-# Free tier: 14,400 requests/day
+# Free tier: 1,000 requests/day (70B models), 14,400 requests/day (8B models)
 api_key = ""
 api_base_url = "https://api.groq.com/openai/v1"
 
 [providers.deepseek]
 # Sign up: https://platform.deepseek.com/api_keys
-# Free tier: Unlimited (may require $5 deposit for API access)
+# Pricing: Pay-as-you-go ($0.028-$2.19 per million tokens, very low cost)
 api_key = ""
 api_base_url = "https://api.deepseek.com"
 
 [providers.together]
 # Sign up: https://api.together.xyz/settings/api-keys
-# Pricing: Requires $5 deposit to access API, then free models available
+# Pricing: $5 credit purchase required (free tier ended Aug 2025)
 api_key = ""
 api_base_url = "https://api.together.xyz/v1"
 
 [providers.google]
 # Sign up: https://makersuite.google.com/app/apikey
-# Free tier: 60 requests/min, 1M tokens/min
+# Free tier: 100 requests/day (Gemini 2.5 Pro)
 api_key = ""
 api_base_url = "https://generativelanguage.googleapis.com/v1beta"
+
+[providers.cloudflare]
+# Sign up: https://dash.cloudflare.com/profile/api-tokens
+# Create API token with Workers AI Read/Write permissions
+# Free tier: 10,000 Neurons/day (~100-10K requests depending on model), 100K requests/day platform limit
+# Note: api_base_url must include your account ID: https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/v1
+api_key = ""
+api_base_url = ""
 
 [providers.hugging_face]
 # Sign up: https://huggingface.co/settings/tokens

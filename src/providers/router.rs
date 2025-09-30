@@ -20,8 +20,9 @@ use crate::{
 };
 
 use super::{
-    deepseek::DeepSeekClient, google::GoogleClient, groq::GroqClient,
-    hugging_face::HuggingFaceClient, together::TogetherClient, AIProvider, Provider,
+    cloudflare::CloudflareClient, deepseek::DeepSeekClient, google::GoogleClient,
+    groq::GroqClient, hugging_face::HuggingFaceClient, together::TogetherClient, AIProvider,
+    Provider,
 };
 
 /// Coordinates AI providers and encapsulates routing logic.
@@ -187,6 +188,34 @@ impl ProviderRouter {
             fallback_order.push(Provider::Together);
         } else {
             debug!(provider = "together", "Provider not configured (missing credentials)");
+        }
+
+        // Cloudflare Workers AI - check encrypted storage first, then config
+        let cloudflare_cfg = config.providers.cloudflare.as_ref();
+        let cloudflare_token_cfg = cloudflare_cfg.and_then(|cfg| {
+            let trimmed = cfg.api_key.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        });
+        let cloudflare_token = match cloudflare_token_cfg {
+            Some(token) => Some(token),
+            None => store.get_token(Provider::Cloudflare).await?,
+        };
+        if let Some(token) = cloudflare_token {
+            let base_url = store
+                .resolve_base_url(
+                    Provider::Cloudflare,
+                    cloudflare_cfg.map(|cfg| cfg.api_base_url.as_str()),
+                )
+                .to_string();
+            let client = CloudflareClient::new(token, base_url)?;
+            drop(providers.insert(Provider::Cloudflare, Arc::new(client)));
+            fallback_order.push(Provider::Cloudflare);
+        } else {
+            debug!(provider = "cloudflare", "Provider not configured (missing credentials)");
         }
 
         Self::from_map_internal(providers, fallback_order, usage_logger, catalog)

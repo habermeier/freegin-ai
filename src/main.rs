@@ -687,11 +687,12 @@ Options:
   -V, --version    Print version information
 
 Providers:
-  groq             Groq (ultra-fast, 14.4K requests/day free) - https://console.groq.com/keys
+  groq             Groq (ultra-fast, 1K-14.4K req/day depending on model) - https://console.groq.com/keys
   deepseek         DeepSeek (pay-per-use, very low cost) - https://platform.deepseek.com/api_keys
-  together         Together AI ($5 deposit, then free models) - https://api.together.xyz/settings/api-keys
+  cloudflare       Cloudflare Workers AI (10K Neurons/day free) - https://dash.cloudflare.com/profile/api-tokens
+  together         Together AI ($5 credit required) - https://api.together.xyz/settings/api-keys
+  google           Google Gemini (100 req/day free) - https://makersuite.google.com/app/apikey
   huggingface      Hugging Face Inference API - https://huggingface.co/settings/tokens
-  google           Google Gemini - https://makersuite.google.com/app/apikey
   openai           OpenAI - https://platform.openai.com/api-keys
   anthropic        Anthropic Claude - https://console.anthropic.com/
   cohere           Cohere - https://dashboard.cohere.com/api-keys",
@@ -753,8 +754,14 @@ async fn handle_init() -> Result<(), AppError> {
         (
             Provider::Google,
             "Google Gemini",
-            "60 requests/min, 1M tokens/min free",
+            "100 requests/day free (Gemini 2.5 Pro)",
             "https://makersuite.google.com/app/apikey",
+        ),
+        (
+            Provider::Cloudflare,
+            "Cloudflare Workers AI",
+            "10,000 Neurons/day free (~100-10K requests), 100K requests/day platform limit",
+            "https://dash.cloudflare.com/profile/api-tokens",
         ),
         (
             Provider::HuggingFace,
@@ -856,6 +863,10 @@ async fn handle_add_service(provider: Provider, store: &CredentialStore) -> Resu
             "https://dashboard.cohere.com/api-keys",
             "Enter Cohere API key (input hidden): ",
         ),
+        Provider::Cloudflare => (
+            "https://dash.cloudflare.com/profile/api-tokens",
+            "Enter Cloudflare API token (input hidden): ",
+        ),
     };
 
     println!("Visit {} to create an API key.", url);
@@ -951,6 +962,12 @@ async fn handle_list_services(
             Provider::Together => config
                 .providers
                 .together
+                .as_ref()
+                .map(|cfg| !cfg.api_key.trim().is_empty())
+                .unwrap_or(false),
+            Provider::Cloudflare => config
+                .providers
+                .cloudflare
                 .as_ref()
                 .map(|cfg| !cfg.api_key.trim().is_empty())
                 .unwrap_or(false),

@@ -400,6 +400,28 @@ impl CatalogStore {
                 40,
                 "Fast summarization",
             ),
+            // Cloudflare Workers AI defaults (serverless GPU inference)
+            (
+                Provider::Cloudflare,
+                Workload::Chat,
+                "@cf/meta/llama-3.3-70b-instruct",
+                18,
+                "Serverless Llama 3.3 70B",
+            ),
+            (
+                Provider::Cloudflare,
+                Workload::Code,
+                "@cf/meta/llama-3.3-70b-instruct",
+                18,
+                "Serverless code-capable model",
+            ),
+            (
+                Provider::Cloudflare,
+                Workload::Creative,
+                "@cf/openai/gpt-oss-120b",
+                20,
+                "OpenAI open-source 120B model",
+            ),
         ];
 
         for (provider, workload, model, priority, rationale) in defaults {

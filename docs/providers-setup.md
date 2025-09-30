@@ -57,12 +57,25 @@ This will:
 ## Additional Providers
 
 ### Google Gemini
-- **Free Tier**: 60 requests/min, 1M tokens/min
-- **Models**: Gemini 2.0 Flash
+- **Free Tier**: 100 requests/day (Gemini 2.5 Pro)
+- **Models**: Gemini 2.0 Flash, Gemini 2.5 Flash, Gemini 2.5 Pro
 - **Get API Key**: https://makersuite.google.com/app/apikey
 - **Setup (Encrypted Storage - Recommended)**:
   ```bash
   freegin-ai add-service google
+  ```
+
+### Cloudflare Workers AI ⭐ NEW
+- **Free Tier**: 10,000 Neurons/day (~100-10,000 requests depending on model), 100,000 requests/day platform limit
+- **Models**: Llama 3.3 70B, OpenAI open models (GPT-OSS 120B), Mistral, DeepSeek, and more
+- **Best For**: Serverless inference, global edge network, OpenAI-compatible API
+- **Get API Token**: https://dash.cloudflare.com/profile/api-tokens
+- **Note**: Create an API token with Workers AI Read/Write permissions. You'll also need your Cloudflare Account ID.
+- **Setup (Encrypted Storage - Recommended)**:
+  ```bash
+  freegin-ai add-service cloudflare
+  # Follow prompts to enter API token securely
+  # Base URL format: https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/v1
   ```
 
 ### Hugging Face
@@ -132,11 +145,17 @@ The system automatically seeds these models for each provider:
 - **Code**: `gemini-2.0-flash` (priority 35)
 - **Summarization**: `gemini-2.0-flash` (priority 40)
 
+### Cloudflare Workers AI
+- **Chat**: `@cf/meta/llama-3.3-70b-instruct` (priority 18)
+- **Code**: `@cf/meta/llama-3.3-70b-instruct` (priority 18)
+- **Creative**: `@cf/openai/gpt-oss-120b` (priority 20)
+
 ## Priority System
 
 Lower priority numbers are tried first:
-- **10-20**: Groq (fastest, truly free)
-- **15-25**: DeepSeek (pay-per-use, very cheap)
+- **10**: Groq (fastest, truly free, but 1K/day for 70B)
+- **15-18**: DeepSeek and Cloudflare (excellent free tiers)
+- **20-25**: Secondary options
 - **30**: Together AI (requires $5 deposit)
 - **35-40**: Google Gemini (rate-limited free)
 
@@ -177,9 +196,12 @@ freegin-ai generate --prompt "Hello, world!"
 
 For best reliability and cost optimization:
 
-1. **Primary**: Groq (fast, generous free tier)
-2. **Backup**: DeepSeek (very low cost, great for complex reasoning)
-3. **Fallback**: Together AI or Google Gemini
-4. **Production**: Consider paid tiers for mission-critical workloads
+1. **Primary**: Groq (ultra-fast, but 1K/day for 70B models)
+2. **Secondary**: Cloudflare Workers AI (10K Neurons/day, serverless, global edge)
+3. **Backup**: DeepSeek (very low cost pay-per-use, great for complex reasoning)
+4. **Fallback**: Google Gemini (100 req/day free)
+5. **Production**: Consider paid tiers for mission-critical workloads
+
+**Why Cloudflare?** When Groq's 1K/day limit is reached for 70B models, Cloudflare Workers AI provides excellent free tier coverage with 10K Neurons/day and runs on Cloudflare's global edge network for low latency.
 
 The health tracking system automatically handles failover between providers!

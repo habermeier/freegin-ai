@@ -29,6 +29,8 @@ pub enum Provider {
     DeepSeek,
     /// Together AI models.
     Together,
+    /// Cloudflare Workers AI models (serverless GPU inference).
+    Cloudflare,
 }
 
 /// A common trait for all AI provider clients.
@@ -50,6 +52,7 @@ impl Provider {
             Provider::Groq => "groq",
             Provider::DeepSeek => "deepseek",
             Provider::Together => "together",
+            Provider::Cloudflare => "cloudflare",
         }
     }
 
@@ -64,6 +67,7 @@ impl Provider {
             "groq" => Some(Provider::Groq),
             "deepseek" => Some(Provider::DeepSeek),
             "together" | "togetherai" | "together_ai" => Some(Provider::Together),
+            "cloudflare" | "cf" | "workers" | "workers_ai" => Some(Provider::Cloudflare),
             _ => None,
         }
     }
@@ -75,6 +79,7 @@ impl fmt::Display for Provider {
     }
 }
 
+pub mod cloudflare;
 pub mod deepseek;
 pub mod google;
 pub mod groq;

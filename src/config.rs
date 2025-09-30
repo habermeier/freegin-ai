@@ -66,6 +66,9 @@ pub struct ProvidersConfig {
     /// Together AI provider settings (optional).
     #[serde(default)]
     pub together: Option<ProviderDetails>,
+    /// Cloudflare Workers AI provider settings (optional).
+    #[serde(default)]
+    pub cloudflare: Option<ProviderDetails>,
 }
 
 /// A generic structure for a provider's API key and base URL.

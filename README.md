@@ -17,6 +17,7 @@
 
 **Free Tier Focus:** The default configuration prioritizes providers with generous free tiers:
 - **Groq**: Ultra-fast inference (14.4K req/day for 8B models, 1K req/day for 70B models)
+- **Cloudflare Workers AI**: Serverless GPU inference (10K Neurons/day, ~100-10K requests)
 - **DeepSeek**: Pay-as-you-go (very low cost: $0.028-$2.19/M tokens)
 - **Together AI**: Requires $5 credit purchase for API access (free tier ended Aug 2025)
 
@@ -154,6 +155,7 @@ freegin-ai remove-service groq
 | Provider | Free Tier | Speed | Best For |
 |----------|-----------|-------|----------|
 | **Groq** | 1K-14.4K req/day (model-dependent) | ⚡ Ultra-fast | Quick queries, high volume |
+| **Cloudflare Workers AI** | 10K Neurons/day (~100-10K req) | Fast | Serverless, global edge network |
 | **DeepSeek** | Pay-per-use ($0.028-$2.19/M) | Fast | Low-cost reasoning |
 | **Together AI** | $5 credit required (no free tier) | Fast | Paid access after deposit |
 | **Google Gemini** | 100 req/day (2.5 Pro) | Fast | Multimodal tasks |
