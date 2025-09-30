@@ -338,7 +338,7 @@ See `AGENTS.md` for development workflow and contribution guidelines.
 
 ## License
 
-[Add your license here]
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
