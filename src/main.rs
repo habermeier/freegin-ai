@@ -694,7 +694,7 @@ Providers:
   mistral          Mistral AI (free tier with rate limits) - https://console.mistral.ai/
   together         Together AI ($5 credit required) - https://api.together.xyz/settings/api-keys
   google           Google Gemini (100 req/day free) - https://makersuite.google.com/app/apikey
-  clarifai         Clarifai AI (1K req/month free) - https://clarifai.com/settings/security
+  clarifai         Clarifai AI (1K req/month free) - https://clarifai.com/login
   github           GitHub Models (50-150 req/day, requires PAT) - https://github.com/settings/tokens
   huggingface      Hugging Face Inference API - https://huggingface.co/settings/tokens
   openai           OpenAI - https://platform.openai.com/api-keys
@@ -789,8 +789,8 @@ async fn handle_init() -> Result<(), AppError> {
         (
             Provider::Clarifai,
             "Clarifai AI",
-            "1,000 requests/month free",
-            "https://clarifai.com/settings/security",
+            "1,000 requests/month free (login first, then Settings → Security)",
+            "https://clarifai.com/login",
         ),
         (
             Provider::GitHubModels,
@@ -911,7 +911,7 @@ async fn handle_add_service(provider: Provider, store: &CredentialStore) -> Resu
             "Enter Mistral API key (input hidden): ",
         ),
         Provider::Clarifai => (
-            "https://clarifai.com/settings/security",
+            "https://clarifai.com/login (then go to Settings → Security)",
             "Enter Clarifai Personal Access Token (input hidden): ",
         ),
         Provider::GitHubModels => (

@@ -64,7 +64,7 @@ api_key = ""
 api_base_url = "https://api.mistral.ai/v1"
 
 [providers.clarifai]
-# Sign up: https://clarifai.com/settings/security
+# Sign up: https://clarifai.com/login (then go to Settings → Security to create PAT)
 # Free tier: 1,000 requests/month
 # Note: Requires Personal Access Token (PAT)
 api_key = ""
